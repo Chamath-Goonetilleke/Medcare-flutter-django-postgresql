@@ -85,28 +85,29 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
                           text:
                               "${appointment['Disease']} - Dr.${appointment['Doctor_ID']['First_name']}",
                           onPressed: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => AppointmentDetailsScreen(
-                            //       appointmentName:
-                            //           appointment['appointmentName'],
-                            //       doctorName: appointment['doctorName'],
-                            //       specialty: appointment['specialty'],
-                            //       appointmentTime:
-                            //           appointment['appointmentTime'],
-                            //       appointmentDate:
-                            //           appointment['appointmentDate'],
-                            //       location: appointment['location'],
-                            //       appointmentNumber:
-                            //           appointment['appointmentNumber'],
-                            //       currentNumber: appointment['currentNumber'],
-                            //       turnTime: appointment['turnTime'],
-                            //       appointmentStatus:
-                            //           appointment['appointmentStatus'],
-                            //     ),
-                            //   ),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AppointmentDetailsScreen(
+                                  appointmentName:
+                                      "${appointment['Disease']} - Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
+                                  doctorName: appointment['Doctor_ID']['First_name'],
+                                  specialty: appointment['Doctor_ID']
+                                      ['Specialization'],
+                                  appointmentTime:
+                                      appointment['Start_time'],
+                                  appointmentDate:
+                                      appointment['Date'],
+                                  location: appointment['Hospital_ID']['Name'],
+                                  appointmentNumber:
+                                      appointment['Token_no'],
+                                  currentNumber: appointment['Token_no'],
+                                  turnTime: appointment['Start_time'],
+                                  appointmentStatus:
+                                      appointment['Status'],
+                                ),
+                              ),
+                            );
                           
                           },
                         );
