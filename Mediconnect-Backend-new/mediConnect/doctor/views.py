@@ -40,7 +40,7 @@ def create_doctor(request):
         NIC=data['NIC'],
         Specialization=data['Specialization'],
         Reg_num=data['Reg_num'],
-        Rating=data.get('Rating', None),
+        Rating=0.0,
         Current_HOS=data.get('Current_HOS', None),
         Availability=data.get('Availability', True),
         ID_photo=data.get('ID_photo', None)

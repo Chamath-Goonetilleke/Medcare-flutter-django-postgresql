@@ -29,7 +29,7 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
   Future<void> fetchData() async {
     final response =
         await http.get(Uri.parse('http://10.0.2.2:8000/api/appointments/'));
-        print(response.statusCode);
+    print(response.statusCode);
     if (response.statusCode == 200) {
       setState(() {
         isLoading = false;
@@ -81,34 +81,31 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
                       itemBuilder: (context, index) {
                         final appointment = appointments[index];
                         return AppointmentButton(
-                          color: appointment['Status'] == "Queued" ? Colors.yellow : Colors.red,
+                          color: appointment['Status'] == "Queued"
+                              ? Colors.yellow
+                              : Colors.red,
                           text:
-                              "${appointment['Disease']} - Dr.${appointment['Doctor_ID']['First_name']}",
+                              "${appointment['Disease']} - Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
                           onPressed: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => AppointmentDetailsScreen(
                                   appointmentName:
-                                      "${appointment['Disease']} - Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
-                                  doctorName: appointment['Doctor_ID']['First_name'],
+                                      "${appointment['Disease']}",
+                                  doctorName: "Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
                                   specialty: appointment['Doctor_ID']
                                       ['Specialization'],
-                                  appointmentTime:
-                                      appointment['Start_time'],
-                                  appointmentDate:
-                                      appointment['Date'],
+                                  appointmentTime: "${appointment['Start_time'] } - ${appointment['End_time']}",
+                                  appointmentDate: appointment['Date'],
                                   location: appointment['Hospital_ID']['Name'],
-                                  appointmentNumber:
-                                      appointment['Token_no'],
+                                  appointmentNumber: appointment['Token_no'],
                                   currentNumber: appointment['Token_no'],
                                   turnTime: appointment['Start_time'],
-                                  appointmentStatus:
-                                      appointment['Status'],
+                                  appointmentStatus: appointment['Status'],
                                 ),
                               ),
                             );
-                          
                           },
                         );
                       },
