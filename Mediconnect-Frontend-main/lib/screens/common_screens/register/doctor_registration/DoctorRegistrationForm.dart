@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mediconnect/repository/doctor_repository.dart';
 import 'package:mediconnect/repository/doctor_visit_hospital.dart';
 import 'package:mediconnect/repository/user_repository.dart';
+import 'package:mediconnect/screens/common_screens/create_account%20&%20login/login/view/LoginScaffold.dart';
 import 'package:mediconnect/screens/common_screens/register/doctor_registration/widgets/DoctorIDField.dart';
 import 'package:mediconnect/screens/common_screens/register/doctor_registration/widgets/DoctorIDUpload.dart';
 import 'package:mediconnect/screens/common_screens/register/doctor_registration/widgets/SpecializationDropdown.dart';
@@ -168,12 +169,12 @@ class _DoctorRegistrationFormState extends State<DoctorRegistrationForm> {
 
                         if (response['status'] == "success") {
                           int doctorID = response['data']['Doctor_ID'];
-                          
+
                           List<Map<String, dynamic>> updatedHospitalDataList =
                               _hospitalDataList.map((hospital) {
                             return {
-                              ...hospital, 
-                              'Doctor_ID': doctorID, 
+                              ...hospital,
+                              'Doctor_ID': doctorID,
                             };
                           }).toList();
 
@@ -181,22 +182,31 @@ class _DoctorRegistrationFormState extends State<DoctorRegistrationForm> {
                               .createDoctorVisitHospital(
                                   visit: jsonEncode(updatedHospitalDataList));
                           if (dvh_response['status'] == "success") {
-                           var res = await userRepository.changeRegStatus(
+                            var res = await userRepository.changeRegStatus(
                                 id: _userId!);
                             if (res['status'] == "success") {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const Home()));
+                              var roleChangeRes = await userRepository
+                                  .changeRole(id: _userId!, role: "Doctor");
+                              if (roleChangeRes['status'] == "success") {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const LoginScaffold()));
+                              } else {
+                                _showErrorDialog(context,
+                                    roleChangeRes['message'].toString());
+                              }
                             } else {
-                              _showErrorDialog(context, res['message']);
+                              _showErrorDialog(
+                                  context, res['message'].toString());
                             }
                           } else {
-                            _showErrorDialog(context, dvh_response['message'].toString());
+                            _showErrorDialog(
+                                context, dvh_response['message'].toString());
                           }
-                          
                         } else {
-                          _showErrorDialog(context, response['message'].toString());
+                          _showErrorDialog(
+                              context, response['message'].toString());
                         }
                       },
                       child: const Text('Register'),

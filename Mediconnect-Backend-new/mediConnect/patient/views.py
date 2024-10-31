@@ -19,7 +19,8 @@ def create_patient(request):
 
     # Check if a patient already exists for this user
     if Patient.objects.filter(User_ID=data['User_ID']).exists():
-        return Response({"status": "error", "message": "Patient already exists for this user"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "error", "message": "Patient already exists for this user"},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     # Create a new patient
     patient = Patient.objects.create(
@@ -40,7 +41,9 @@ def create_patient(request):
 
     # Serialize and return the response
     serializer = PatientSerializer(patient)
-    return Response({"status": "success", "data": serializer.data, "message": "Patient created successfully"}, status=status.HTTP_201_CREATED)
+    return Response({"status": "success", "data": serializer.data, "message": "Patient created successfully"},
+                    status=status.HTTP_201_CREATED)
+
 
 # Get a patient by ID
 @api_view(['GET'])
@@ -51,6 +54,17 @@ def get_patient_by_id(request, pk):
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
     except Patient.DoesNotExist:
         return Response({"status": "error", "message": "Patient not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def get_patient_by_user_id(request, userId):
+    try:
+        patient = Patient.objects.get(User_ID_id=userId)
+        serializer = PatientSerializer(patient, many=False)
+        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+    except Patient.DoesNotExist:
+        return Response({"status": "error", "message": "Patient not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
 @api_view(['GET'])
 def get_all_patients(request):

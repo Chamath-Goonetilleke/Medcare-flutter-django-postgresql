@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mediconnect/repository/user_repository.dart';
 import 'package:mediconnect/screens/common_screens/create_account%20&%20login/widgets/facebook_sign_in_button.dart';
 import 'package:mediconnect/screens/common_screens/role_selection/RoleSelection.dart';
+import 'package:mediconnect/screens/doctor_screens/homepage/home.dart';
 import 'package:mediconnect/screens/patient_screens/home/home_page/HomePage.dart';
 import '../../widgets/widgets.dart';
 //import '../role_selection/role_selection_screen.dart'; // Import role selection screen
@@ -122,11 +123,25 @@ class _LoginScaffoldState extends State<LoginScaffold> {
                                   print(response['data']['User_ID']);
                                   setUserID(response['data']['User_ID'].toString());
                                   if (response['data']['IsRegistered']) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => HomePage()),
-                                    );
+                                    if(response['data']['Role'] == "Patient"){
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => HomePage()),
+                                      );
+                                    }
+                                    else if (response['data']['Role'] == "Doctor") {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => const Home()),
+                                      );
+                                    }
+                                    else{
+                                      _showErrorDialog(
+                                          context, "Role is not set");
+                                    }
+
                                   } else {
                                     Navigator.push(
                                       context,

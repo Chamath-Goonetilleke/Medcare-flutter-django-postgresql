@@ -68,7 +68,6 @@ class _SearchPageScaffoldState extends State<SearchPagescaffold> {
     if (data['status'] == "success") {
       setState(() {
         visitData = data['data'];
-        _checkSearchAvailability();
       });
       return data['data'];
     } else {
@@ -125,25 +124,31 @@ class _SearchPageScaffoldState extends State<SearchPagescaffold> {
     }
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null && picked != selectedTime) {
-      setState(() {
-        selectedTime = picked;
-      });
-      _checkSearchAvailability();
-    }
-  }
+  final List<String> daysOfWeek = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun'
+  ];
+  final Map<String, bool> daySelected = {
+    'Mon': false,
+    'Tue': false,
+    'Wed': false,
+    'Thu': false,
+    'Fri': false,
+    'Sat': false,
+    'Sun': false,
+  };
 
   void _validateDoctorAvailability() {
     if (visitData != null && selectedDate != null) {
       String selectedDay = DateFormat('EEE').format(selectedDate!);
       print(selectedDay);
       if (visitData![selectedDay] == true) {
-        _checkSearchAvailability();
+        isSearchEnabled = true;
       } else {
         setState(() {
           selectedDate = null;
@@ -155,43 +160,6 @@ class _SearchPageScaffoldState extends State<SearchPagescaffold> {
       }
     }
   }
-
-  void _checkSearchAvailability() {
-    if (selectedDate != null && selectedTime != null && visitData != null) {
-      final DateTime startTime =
-          DateFormat.jm().parse(visitData!['AP_Start_Time']);
-      final DateTime endTime = DateFormat.jm().parse(visitData!['AP_End_Time']);
-
-      // Creating DateTime objects for comparison by using selectedDate with only the time portion.
-      final DateTime selectedDateTime =
-          DateTime(1970, 1, 1, selectedTime!.hour, selectedTime!.minute);
-      final DateTime startDateTime =
-          DateTime(1970, 1, 1, startTime.hour, startTime.minute);
-      final DateTime endDateTime =
-          DateTime(1970, 1, 1, endTime.hour, endTime.minute);
-
-      setState(() {
-        
-        isSearchEnabled = selectedDateTime.isAfter(startDateTime) &&
-            selectedDateTime.isBefore(endDateTime);
-      });
-      if(!(isSearchEnabled = selectedDateTime.isAfter(startDateTime) &&
-          selectedDateTime.isBefore(endDateTime))){
-            setState(() {
-              selectedTime = null;
-            });
-          }
-
-      if (!isSearchEnabled) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content:
-                  Text('Selected time is outside doctor\'s visiting hours')),
-        );
-      }
-    }
-  }
-
 
   void _searchDoctors() {
     setSearchData();
@@ -218,156 +186,208 @@ class _SearchPageScaffoldState extends State<SearchPagescaffold> {
       appBar: AppBar(
         title: const Text("Search for a Doctor"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: _fetchDoctors(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Text('No doctors available');
-                } else {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: 'Search by Doctor Name',
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              FutureBuilder<List<Map<String, dynamic>>>(
+                future: _fetchDoctors(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Text('No doctors available');
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Search by Doctor Name',
+                        ),
+                        items: snapshot.data!.map((doctor) {
+                          return DropdownMenuItem<String>(
+                            value: doctor['Doctor_ID'],
+                            child: Text(doctor['Doctor_Name']!),
+                          );
+                        }).toList(),
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedDoctorId = value;
+                          });
+                        },
+                        value: selectedDoctorId,
                       ),
-                      items: snapshot.data!.map((doctor) {
-                        return DropdownMenuItem<String>(
-                          value: doctor['Doctor_ID'],
-                          child: Text(doctor['Doctor_Name']!),
-                        );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        setState(() {
-                          selectedDoctorId = value;
-                        });
+                    );
+                  }
+                },
+              ),
+              selectedDoctorId == null
+                  ? FutureBuilder<List<Map<String, dynamic>>>(
+                      future: _fetchMedicalCenters(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return const Text('No medical centers available');
+                        } else {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: DropdownButtonFormField<String>(
+                              decoration: const InputDecoration(
+                                labelText: 'Search by Medical Center',
+                              ),
+                              items: snapshot.data!.map((center) {
+                                return DropdownMenuItem<String>(
+                                  value: center['Hospital_Name'],
+                                  child: Text(center['Hospital_Name']!),
+                                );
+                              }).toList(),
+                              onChanged: (String? value) {
+                                setState(() {
+                                  selectedMedicalCenterId = value;
+                                });
+                                fetchDoctorVisit();
+                              },
+                              value: selectedMedicalCenterId,
+                            ),
+                          );
+                        }
                       },
-                      value: selectedDoctorId,
-                    ),
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 10),
-            selectedDoctorId == null
-                ? FutureBuilder<List<Map<String, dynamic>>>(
-                    future: _fetchMedicalCenters(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Text('No medical centers available');
-                      } else {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(
-                              labelText: 'Search by Medical Center',
-                            ),
-                            items: snapshot.data!.map((center) {
-                              return DropdownMenuItem<String>(
-                                value: center['Hospital_Name'],
-                                child: Text(center['Hospital_Name']!),
-                              );
-                            }).toList(),
-                            onChanged: (String? value) {
-                              setState(() {
-                                selectedMedicalCenterId = value;
-                              });
-                              fetchDoctorVisit();
-                            },
-                            value: selectedMedicalCenterId,
-                          ),
-                        );
-                      }
-                    },
-                  )
-                : FutureBuilder<List<Map<String, dynamic>>>(
-                    future: _fetchDoctorVisits(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Text('No medical centers available');
-                      } else {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(
-                              labelText: 'Search by Medical Center',
-                            ),
-                            items: snapshot.data!.map((center) {
-                              return DropdownMenuItem<String>(
-                                value: center['Hospital_ID'],
-                                child: Text(center['Hospital_Name']!),
-                              );
-                            }).toList(),
-                            onChanged: (String? value) {
-                              String? name;
-                              for (var hospital in hospitals) {
-                                if (hospital['Hospital_ID'].toString() ==
-                                    value.toString()) {
-                                  name =
-                                      "${hospital['Name']} - ${hospital['Location']} ";
+                    )
+                  : FutureBuilder<List<Map<String, dynamic>>>(
+                      future: _fetchDoctorVisits(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return const Text('No medical centers available');
+                        } else {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: DropdownButtonFormField<String>(
+                              decoration: const InputDecoration(
+                                labelText: 'Search by Medical Center',
+                              ),
+                              items: snapshot.data!.map((center) {
+                                return DropdownMenuItem<String>(
+                                  value: center['Hospital_ID'],
+                                  child: Text(center['Hospital_Name']!),
+                                );
+                              }).toList(),
+                              onChanged: (String? value) {
+                                String? name;
+                                for (var hospital in hospitals) {
+                                  if (hospital['Hospital_ID'].toString() ==
+                                      value.toString()) {
+                                    name =
+                                        "${hospital['Name']} - ${hospital['Location']} ";
+                                  }
                                 }
-                              }
-                              setState(() {
-                                selectedMedicalCenterId = value;
-                                selectedHospitalName = name;
-                              });
-                              fetchDoctorVisit();
-                            },
-                            value: selectedMedicalCenterId,
-                          ),
-                        );
-                      }
-                    },
+                                setState(() {
+                                  selectedMedicalCenterId = value;
+                                  selectedHospitalName = name;
+                                });
+                                fetchDoctorVisit();
+                              },
+                              value: selectedMedicalCenterId,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+              visitData != null
+                  ? Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Doctor Visiting Days",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            Wrap(
+                              children: daysOfWeek.map((day) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Checkbox(
+                                      value: visitData![day],
+                                      onChanged: (bool? value) {},
+                                    ),
+                                    Text(day),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Appointment Visits",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              "Time : ${visitData!['AP_Start_Time']} - ${visitData!['AP_End_Time']}",
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              "Appointment Less Visits",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              "Time : ${visitData!['APL_Start_Time']} - ${visitData!['APL_End_Time']}",
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const Row(),
+              const SizedBox(height: 10),
+              TextField(
+                controller: diseaseController,
+                decoration: const InputDecoration(
+                  labelText: 'Search by Disease',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    disease = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
+              DatePickerField(
+                selectedDate: selectedDate,
+                onDateSelected: () => _selectDate(context),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: isSearchEnabled ? _searchDoctors : null,
+                child: const Text(
+                  'Search',
+                  style: TextStyle(color: Colors.black),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 150, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    side: const BorderSide(color: Colors.black, width: 2.0),
                   ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: diseaseController,
-              decoration: const InputDecoration(
-                labelText: 'Search by Disease',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  disease = value;
-                });
-              },
-            ),
-            const SizedBox(height: 40),
-            DatePickerField(
-              selectedDate: selectedDate,
-              onDateSelected: () => _selectDate(context),
-            ),
-            const SizedBox(height: 10),
-            TimePickerField(
-              selectedTime: selectedTime,
-              onTimeSelected: () => _selectTime(context),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: isSearchEnabled ? _searchDoctors : null,
-              child: const Text(
-                'Search',
-                style: TextStyle(color: Colors.black),
-              ),
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 150, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  side: const BorderSide(color: Colors.black, width: 2.0),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: PatientBottomNavBar(

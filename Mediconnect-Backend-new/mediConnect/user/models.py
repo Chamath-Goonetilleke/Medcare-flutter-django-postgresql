@@ -8,3 +8,4 @@ class User(models.Model):
     Password = models.CharField(max_length=255)
     Device_ID = models.CharField(max_length=256)
     IsRegistered = models.BooleanField(default=False)
+    Role = models.CharField(max_length=255, null=True)

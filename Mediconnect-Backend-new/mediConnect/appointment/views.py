@@ -24,6 +24,14 @@ def get_all_appointments(request):
     return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+def get_all_appointments_by_queue_id(request, queue_id):
+    appointments = Appointment.objects.filter(Queue_ID=queue_id)
+    serializer = AppointmentSerializer(appointments, many=True)
+    return Response({"status": "success", "data": serializer.data, "queue_length": len(appointments)},
+                    status=status.HTTP_200_OK)
+
+
 # Get an appointment by ID
 @api_view(['GET'])
 def get_appointment_by_id(request, pk):

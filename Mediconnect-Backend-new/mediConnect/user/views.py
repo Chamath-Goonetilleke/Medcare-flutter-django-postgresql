@@ -89,3 +89,20 @@ def update_user_registration_status(request, pk):
     return Response(
         {"status": "success", "data": serializer.data, "message": "User registration status updated to True"},
         status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+def update_user_role(request, pk):
+    try:
+        # Retrieve the user by their User_ID (pk)
+        user = User.objects.get(User_ID=pk)
+    except User.DoesNotExist:
+        return Response({"status": "error", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Update the IsRegistered field to True
+    user.Role = request.data["Role"]
+    user.save()
+
+    serializer = UserSerializer(user)
+    return Response(
+        {"status": "success", "data": serializer.data, "message": "User registration status updated to True"},
+        status=status.HTTP_200_OK)

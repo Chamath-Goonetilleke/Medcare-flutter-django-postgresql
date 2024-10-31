@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mediconnect/repository/patient_repository.dart';
 import 'package:mediconnect/repository/user_repository.dart';
+import 'package:mediconnect/screens/common_screens/create_account%20&%20login/login/view/LoginScaffold.dart';
 import 'package:mediconnect/screens/common_screens/register/widgets/address_fields.dart';
 import 'package:mediconnect/screens/common_screens/register/widgets/birthday_field.dart';
 import 'package:mediconnect/screens/common_screens/register/widgets/name_fields.dart';
 import 'package:mediconnect/screens/common_screens/register/widgets/nic_field.dart';
 import 'package:mediconnect/screens/common_screens/welcome/widgets/BackgroundImage.dart';
+import '../../../../doctor_screens/homepage/home.dart';
 import '../widgets/widgets.dart';
 import 'package:mediconnect/screens/patient_screens/home/home_page/HomePage.dart'; // Import the Home Screen after registration
 import 'package:http/http.dart' as http;
@@ -191,11 +193,17 @@ class _PatientRegistrationScaffoldState
                               var res = await userRepository.changeRegStatus(id: _userId!);
                               print(res);
                               if (res['status'] == "success") {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HomePage()),
-                                );
+                                var roleChangeRes = await userRepository
+                                    .changeRole(id: _userId!, role: "Patient");
+                                if (roleChangeRes['status'] == "success") {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => const LoginScaffold()));
+                                } else {
+                                  _showErrorDialog(context,
+                                      roleChangeRes['message'].toString());
+                                }
                               }
                               if (response['status'] == "error") {
                                 _showErrorDialog(context, response['message']);

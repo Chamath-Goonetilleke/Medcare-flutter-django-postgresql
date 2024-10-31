@@ -60,4 +60,24 @@ class UserRepository {
       print("Error: " + error.toString());
     }
   }
+
+Future<dynamic> changeRole({required String id, required String role}) async {
+    try {
+      var response = await http.put(
+          Uri.parse('http://10.0.2.2:8000/api/users/$id/update-role/'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8'
+          },
+          body: jsonEncode(<String, String>{"Role": role}));
+      final data = jsonDecode(response.body);
+      if (data == null) {
+        return {"status": "error", "message": "Something went wrong"};
+      } else {
+        return data;
+      }
+    } catch (error) {
+      print("Error: " + error.toString());
+    }
+  }
+
 }

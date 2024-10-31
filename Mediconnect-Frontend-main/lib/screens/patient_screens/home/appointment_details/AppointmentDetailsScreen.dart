@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../themes/appointmentStatusColors.dart';
 import '../rate/RateScreen.dart';
@@ -29,6 +30,12 @@ class AppointmentDetailsScreen extends StatelessWidget {
     required this.appointmentStatus,
   });
 
+  String formatDate(String dateString) {
+    DateTime dateTime = DateTime.parse(dateString.split('.').first);
+
+    return DateFormat('yyyy-MM-dd').format(dateTime);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,10 +60,10 @@ class AppointmentDetailsScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.calendar_today, size: 40),
               title: Text(
-                appointmentTime,
+                formatDate(appointmentDate),
                 style: const TextStyle(fontSize: 18),
               ),
-              subtitle: Text(appointmentDate),
+              subtitle: Text(appointmentTime),
             ),
             ListTile(
               leading: const Icon(Icons.location_on, size: 40),
