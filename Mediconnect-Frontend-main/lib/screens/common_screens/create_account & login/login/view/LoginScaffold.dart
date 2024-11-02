@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mediconnect/repository/user_repository.dart';
 import 'package:mediconnect/screens/common_screens/create_account%20&%20login/widgets/facebook_sign_in_button.dart';
 import 'package:mediconnect/screens/common_screens/role_selection/RoleSelection.dart';
+import 'package:mediconnect/screens/doctor_screens/doctormain.dart';
 import 'package:mediconnect/screens/doctor_screens/homepage/home.dart';
 import 'package:mediconnect/screens/patient_screens/home/home_page/HomePage.dart';
 import '../../widgets/widgets.dart';
@@ -120,7 +121,6 @@ class _LoginScaffoldState extends State<LoginScaffold> {
                                   "Password": _passwordController.text
                                 }));
                                 if (response['status'] == "success") {
-                                  print(response['data']['User_ID']);
                                   setUserID(response['data']['User_ID'].toString());
                                   if (response['data']['IsRegistered']) {
                                     if(response['data']['Role'] == "Patient"){
@@ -134,7 +134,7 @@ class _LoginScaffoldState extends State<LoginScaffold> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => const Home()),
+                                            builder: (context) => const DoctorHomeScreen()),
                                       );
                                     }
                                     else{

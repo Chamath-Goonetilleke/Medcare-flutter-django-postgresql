@@ -485,10 +485,8 @@ class _VisitingHospitalFieldState extends State<VisitingHospitalField> {
           ),
           const SizedBox(height: 10),
           Wrap(
-            spacing: 5.0,
-            runSpacing: 5.0,
             children: daysOfWeek.map((day) {
-              return Row(
+              return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Checkbox(

@@ -72,11 +72,13 @@ class _TodayTaskContainerState extends State<TodayTaskContainer> {
                         items: const [
                           DropdownMenuItem(
                             value: 'maharagama',
-                            child: Text('maharagama', style: TextStyle(fontSize: 10)),
+                            child: Text('maharagama',
+                                style: TextStyle(fontSize: 10)),
                           ),
                           DropdownMenuItem(
                             value: 'kalupovila',
-                            child: Text('kalupovila', style: TextStyle(fontSize: 10)),
+                            child: Text('kalupovila',
+                                style: TextStyle(fontSize: 10)),
                           ),
                         ],
                         onChanged: (value) {
@@ -88,19 +90,25 @@ class _TodayTaskContainerState extends State<TodayTaskContainer> {
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black, width: 1),
-                            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                            borderSide:
+                                BorderSide(color: Colors.black, width: 1),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black, width: 1.0),
-                            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                            borderSide:
+                                BorderSide(color: Colors.black, width: 1.0),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black, width: 1),
-                            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                            borderSide:
+                                BorderSide(color: Colors.black, width: 1),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 0, horizontal: 20),
+                          contentPadding:
+                              EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                         ),
                         alignment: Alignment.center,
                       ),
@@ -129,11 +137,13 @@ class _TodayTaskContainerState extends State<TodayTaskContainer> {
                         items: const [
                           DropdownMenuItem(
                             value: '16:30',
-                            child: Text('4.30pm', style: TextStyle(fontSize: 10)),
+                            child:
+                                Text('4.30pm', style: TextStyle(fontSize: 10)),
                           ),
                           DropdownMenuItem(
                             value: '12:00',
-                            child: Text('12:00pm', style: TextStyle(fontSize: 10)),
+                            child:
+                                Text('12:00pm', style: TextStyle(fontSize: 10)),
                           ),
                         ],
                         onChanged: (value) {
@@ -145,19 +155,25 @@ class _TodayTaskContainerState extends State<TodayTaskContainer> {
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black, width: 1),
-                            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                            borderSide:
+                                BorderSide(color: Colors.black, width: 1),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black, width: 1.0),
-                            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                            borderSide:
+                                BorderSide(color: Colors.black, width: 1.0),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black, width: 1),
-                            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                            borderSide:
+                                BorderSide(color: Colors.black, width: 1),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 0, horizontal: 20),
+                          contentPadding:
+                              EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                         ),
                         alignment: Alignment.center,
                       ),
@@ -179,11 +195,11 @@ class _TodayTaskContainerState extends State<TodayTaskContainer> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(70),
                           ),
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Colors.blue.shade100,
                         ),
                         child: const Text(
                           "Confirm Pre-planned",
-                          style: TextStyle(fontSize: 10, color: Colors.white),
+                          style: TextStyle(fontSize: 10, color: Colors.black),
                         ),
                       ),
                     ),

@@ -9,7 +9,7 @@ from hospital.models import Hospital
 from hospital.serializers import HospitalSerializer
 from user.models import User
 from .models import Doctor
-from .serializers import DoctorSerializer
+from .serializers import DoctorSerializer, DoctorAddSerializer
 
 
 # Create a new doctor
@@ -41,13 +41,13 @@ def create_doctor(request):
         Specialization=data['Specialization'],
         Reg_num=data['Reg_num'],
         Rating=0.0,
-        Current_HOS=data.get('Current_HOS', None),
+        Current_HOS_ID=data.get('Current_HOS', None),
         Availability=data.get('Availability', True),
         ID_photo=data.get('ID_photo', None)
     )
 
     # Serialize and return the response
-    serializer = DoctorSerializer(doctor)
+    serializer = DoctorAddSerializer(doctor)
     return Response({"status": "success", "data": serializer.data, "message": "Doctor created successfully"},
                     status=status.HTTP_201_CREATED)
 
@@ -57,6 +57,15 @@ def create_doctor(request):
 def get_doctor_by_id(request, pk):
     try:
         doctor = Doctor.objects.get(Doctor_ID=pk)
+        serializer = DoctorSerializer(doctor, many=False)
+        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+    except Doctor.DoesNotExist:
+        return Response({"status": "error", "message": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def get_doctor_by_user_id(request, userId):
+    try:
+        doctor = Doctor.objects.get(User_ID=userId)
         serializer = DoctorSerializer(doctor, many=False)
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
     except Doctor.DoesNotExist:
@@ -91,11 +100,31 @@ def update_doctor(request, pk):
         return Response({"status": "error", "message": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data
-    serializer = DoctorSerializer(instance=doctor, data=data, partial=True)  # Use partial=True for partial updates
+    serializer = DoctorAddSerializer(instance=doctor, data=data, partial=True)  # Use partial=True for partial updates
 
     if serializer.is_valid():
         serializer.save()
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+
+    return Response({"status": "error", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PATCH'])
+def update_doctor_current_hospital(request, pk):
+    try:
+        doctor = Doctor.objects.get(Doctor_ID=pk)
+    except Doctor.DoesNotExist:
+        return Response({"status": "error", "message": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    data = request.data
+
+    serializer = DoctorAddSerializer(instance=doctor, data=data, partial=True)  # Use partial=True for partial updates
+
+    if serializer.is_valid():
+        serializer.save()
+        updated_doctor = Doctor.objects.get(Doctor_ID=pk)
+        update_serializer = DoctorSerializer(updated_doctor, many=False)
+        return Response({"status": "success", "data": update_serializer.data}, status=status.HTTP_200_OK)
 
     return Response({"status": "error", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 

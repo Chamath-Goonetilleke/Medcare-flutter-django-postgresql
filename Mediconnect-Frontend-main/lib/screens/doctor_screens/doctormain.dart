@@ -1,12 +1,16 @@
 // import 'package:doctor/NotificationPage/notification.dart';
 // import 'package:doctor/ProfilePage/profile.dart';
 // import 'package:doctor/TaskPage/mytask.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mediconnect/screens/doctor_screens/NotificationPage/notification.dart';
 import 'package:mediconnect/screens/doctor_screens/ProfilePage/profile.dart';
 import 'package:mediconnect/screens/doctor_screens/TaskPage/mytask.dart';
 import 'package:mediconnect/screens/doctor_screens/StatsPage/bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'homepage/home.dart';
+import 'package:http/http.dart' as http;
 
 class DoctorHomeScreen extends StatefulWidget {
   const DoctorHomeScreen({super.key});
@@ -24,6 +28,8 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
     });
   }
 
+  
+
   static final List<Widget> _widgetOptions = <Widget>[
     const TaskPage(),
     const Barchart(),
@@ -38,6 +44,8 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
       label: label,
     );
   }
+
+  
 
   @override
   Widget build(BuildContext context) {

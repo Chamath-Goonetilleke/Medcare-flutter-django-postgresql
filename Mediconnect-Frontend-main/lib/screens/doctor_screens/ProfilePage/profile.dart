@@ -5,49 +5,6 @@ import 'package:mediconnect/screens/common_screens/create_account%20&%20login/lo
 class Profile extends StatelessWidget {
   const Profile({super.key});
 
-  void _showRemoveAccountDialog(BuildContext context, String userName) {
-    TextEditingController controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Remove Account'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Type "Remove $userName" to confirm'),
-              const SizedBox(height: 10),
-              TextField(controller: controller),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                if (controller.text == 'Remove $userName') {
-                  // Perform account removal
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  );
-                } else {
-                  // Show error message or do nothing
-                }
-              },
-              child: const Text('Confirm'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     const String firstName = "John";
@@ -234,15 +191,17 @@ class Profile extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
                   );
                 },
-                child: const Text('Log Out'),
-              ),
-              ElevatedButton(
-                onPressed: () => _showRemoveAccountDialog(context, fullName),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Remove Account'),
+                child: const Text(
+                  'Log Out',
+                  style: TextStyle(color: Colors.black),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lightBlue.shade700,
+                ),
               ),
             ],
           ),

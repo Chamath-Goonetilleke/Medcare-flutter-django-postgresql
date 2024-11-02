@@ -6,10 +6,11 @@ class HospitalDropdown extends StatefulWidget {
   final String? selectedHospital;
   final Function(String?) onHospitalChanged;
 
-  HospitalDropdown({
+  const HospitalDropdown({
     required this.selectedHospital,
     required this.onHospitalChanged,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<HospitalDropdown> createState() => _HospitalDropdownState();
@@ -32,8 +33,7 @@ class _HospitalDropdownState extends State<HospitalDropdown> {
       final data = jsonDecode(response.body);
       return (data['data'] as List).map((center) {
         return {
-          'Hospital_ID':
-              center['Hospital_ID'].toString(), // Ensure ID is a string
+          'Hospital_ID': center['Hospital_ID'].toString(),
           'Hospital_Name': center['Name'] + ' - ' + center['Location']
         };
       }).toList();
@@ -53,21 +53,27 @@ class _HospitalDropdownState extends State<HospitalDropdown> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Text('No medical centers available');
           } else {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Hospital',
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Hospital',
+                  ),
+                  items: snapshot.data!.map((center) {
+                    return DropdownMenuItem<String>(
+                      value: center['Hospital_ID'],
+                      child: Flexible(
+                        child: Text(
+                          center['Hospital_Name']!,
+                          overflow: TextOverflow.ellipsis, // Prevent overflow
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: widget.onHospitalChanged,
+                  value: widget.selectedHospital,
                 ),
-                items: snapshot.data!.map((center) {
-                  return DropdownMenuItem<String>(
-                    value: center['Hospital_ID'], // The ID is stored as value
-                    child:
-                        Text(center['Hospital_Name']!), // The name is displayed
-                  );
-                }).toList(),
-                onChanged: widget.onHospitalChanged,
-                value: widget.selectedHospital,
               ),
             );
           }

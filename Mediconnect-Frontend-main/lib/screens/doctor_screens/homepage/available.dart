@@ -11,15 +11,14 @@ ElevatedButton available() {
     },
     style: ElevatedButton.styleFrom(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      shape:  RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
-      backgroundColor:const Color.fromARGB(255, 74, 224, 79),
-      
+      backgroundColor: Colors.green.shade100,
     ),
     child: const Text(
       "Available",
-      style: TextStyle(fontSize: 16,color: Colors.black ),
+      style: TextStyle(fontSize: 16, color: Colors.black),
     ),
   );
 }

@@ -18,7 +18,7 @@ class TaskPage extends StatefulWidget {
 class _CalendarViewState extends State<TaskPage> {
   final DateTime currentDate = DateTime.now();
   late DateTime selectedDate; // Initialize with the current date
-  
+
   Map<DateTime, List<Task>> tasks = {
     // Sample tasks for demonstration
     DateTime.now(): [
@@ -100,17 +100,19 @@ class _CalendarViewState extends State<TaskPage> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: (isSelected && !isToday)
-                                ? Colors.blue
-                                : (isToday ? Colors.green : Colors.grey[300]),
+                                ? Colors.green.shade100
+                                : (isToday
+                                    ? Colors.green.shade300
+                                    : Colors.grey[300]),
                           ),
                           child: Center(
                             child: Text(
                               dayNumber,
                               style: TextStyle(
                                 fontSize: 18,
-                                color: isSelected || isToday
-                                    ? Colors.white
-                                    : Colors.black,
+                                color: (isSelected && !isToday)
+                                    ? Colors.green.shade700
+                                    : (isToday ? Colors.white : Colors.black),
                               ),
                             ),
                           ),
@@ -122,7 +124,7 @@ class _CalendarViewState extends State<TaskPage> {
               },
             ),
           ),
-          
+
           //Today task
           if (selectedDate.day == currentDate.day &&
               selectedDate.month == currentDate.month &&
@@ -134,7 +136,7 @@ class _CalendarViewState extends State<TaskPage> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
-          
+
           Expanded(
             child: Center(
               child: ListView.builder(
@@ -142,12 +144,11 @@ class _CalendarViewState extends State<TaskPage> {
                 itemBuilder: (context, index) {
                   Task task = tasks[selectedDate]![index];
                   return Container(
-                    margin: const EdgeInsets.only(
-                        left: 10,right: 10,top:10),
-                    padding: const EdgeInsets.only(left: 20.0,right:0 ,top:10),
-                    
+                    margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                    padding:
+                        const EdgeInsets.only(left: 20.0, right: 0, top: 10),
                     decoration: BoxDecoration(
-                      color:const Color.fromARGB(255, 205, 216, 235),
+                      color: const Color.fromARGB(255, 205, 216, 235),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -169,27 +170,31 @@ class _CalendarViewState extends State<TaskPage> {
                               task.venue,
                               style: const TextStyle(
                                 fontSize: 16,
-                                color:  Colors.black,
+                                color: Colors.black,
                               ),
                             ),
                             Text(
                               '${task.startTime.format(context)} to ${task.endTime.format(context)}',
                               style: const TextStyle(
                                 fontSize: 16,
-                                color:  Colors.black,
+                                color: Colors.black,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(width: 90,),
+                        const SizedBox(
+                          width: 90,
+                        ),
                         Column(
                           //crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             IconButton(
                               icon: Icon(
                                 Icons.check_circle,
-                                color: task.isCompleted ? Colors.green : Colors.grey,
-                                size:30,
+                                color: task.isCompleted
+                                    ? Colors.green
+                                    : Colors.grey,
+                                size: 30,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -218,151 +223,154 @@ class _CalendarViewState extends State<TaskPage> {
           ElevatedButton(
             onPressed: () {
               _showAddTaskDialog(context);
-               if (kDebugMode) {
-             print("Add Task button clicked");
-           }
+              if (kDebugMode) {
+                print("Add Task button clicked");
+              }
             },
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              backgroundColor: const Color.fromARGB(255, 3, 139, 251),
+              backgroundColor: Colors.lightBlue.shade100,
             ),
             child: const Text(
               "Add task",
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
             ),
           ),
-          const SizedBox(height: 5,),
+          const SizedBox(
+            height: 5,
+          ),
           ElevatedButton(
             onPressed: () {
-
-           Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const WeekPlanner()),
-            );
-           if (kDebugMode) {
-             print("Weekly planner button clicked");
-           }
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const WeekPlanner()),
+              );
+              if (kDebugMode) {
+                print("Weekly planner button clicked");
+              }
             },
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              backgroundColor: const Color.fromARGB(255, 3, 139, 251),
+              backgroundColor: Colors.lightBlue.shade100,
             ),
             child: const Text(
               "Week planner",
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
             ),
           ),
-          const SizedBox(height: 5,),
-
+          const SizedBox(
+            height: 5,
+          ),
         ],
       ),
     );
   }
+
   void _editTaskDialog(BuildContext context, Task task) {
-  String taskName = task.name;
-  String venue = task.venue;
-  TimeOfDay startTime = task.startTime;
-  TimeOfDay endTime = task.endTime;
+    String taskName = task.name;
+    String venue = task.venue;
+    TimeOfDay startTime = task.startTime;
+    TimeOfDay endTime = task.endTime;
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Edit Task'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: const InputDecoration(hintText: 'Enter task name'),
-                controller: TextEditingController(text: taskName),
-                onChanged: (value) {
-                  taskName = value;
-                },
-              ),
-              TextField(
-                decoration: const InputDecoration(hintText: 'Enter venue'),
-                controller: TextEditingController(text: venue),
-                onChanged: (value) {
-                  venue = value;
-                },
-              ),
-              TextButton(
-                onPressed: () async {
-                  final selectedTime = await showTimePicker(
-                    context: context,
-                    initialTime: startTime,
-                  );
-                  if (selectedTime != null) {
-                    startTime = selectedTime;
-                  }
-                },
-                child: const Text('Select Start Time'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  final selectedTime = await showTimePicker(
-                    context: context,
-                    initialTime: endTime,
-                  );
-                  if (selectedTime != null) {
-                    endTime = selectedTime;
-                  }
-                },
-                child: const Text('Select End Time'),
-              ),
-            ],
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Task'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  decoration:
+                      const InputDecoration(hintText: 'Enter task name'),
+                  controller: TextEditingController(text: taskName),
+                  onChanged: (value) {
+                    taskName = value;
+                  },
+                ),
+                TextField(
+                  decoration: const InputDecoration(hintText: 'Enter venue'),
+                  controller: TextEditingController(text: venue),
+                  onChanged: (value) {
+                    venue = value;
+                  },
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final selectedTime = await showTimePicker(
+                      context: context,
+                      initialTime: startTime,
+                    );
+                    if (selectedTime != null) {
+                      startTime = selectedTime;
+                    }
+                  },
+                  child: const Text('Select Start Time'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final selectedTime = await showTimePicker(
+                      context: context,
+                      initialTime: endTime,
+                    );
+                    if (selectedTime != null) {
+                      endTime = selectedTime;
+                    }
+                  },
+                  child: const Text('Select End Time'),
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (taskName.isNotEmpty &&
-                  venue.isNotEmpty &&
-                  !_isTimeOverlap(startTime, endTime)) {
-                setState(() {
-                  task.name = taskName;
-                  task.venue = venue;
-                  task.startTime = startTime;
-                  task.endTime = endTime;
-                });
+          actions: [
+            TextButton(
+              onPressed: () {
                 Navigator.of(context).pop();
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content:
-                          Text('Task time overlaps with an existing task')),
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (taskName.isNotEmpty &&
+                    venue.isNotEmpty &&
+                    !_isTimeOverlap(startTime, endTime)) {
+                  setState(() {
+                    task.name = taskName;
+                    task.venue = venue;
+                    task.startTime = startTime;
+                    task.endTime = endTime;
+                  });
+                  Navigator.of(context).pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content:
+                            Text('Task time overlaps with an existing task')),
+                  );
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _showAddTaskDialog(BuildContext context) {
     String taskName = '';
@@ -477,5 +485,3 @@ class _CalendarViewState extends State<TaskPage> {
     return time.hour + time.minute / 60.0;
   }
 }
-
-

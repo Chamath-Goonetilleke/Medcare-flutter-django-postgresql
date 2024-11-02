@@ -137,8 +137,10 @@ class _DoctorRegistrationFormState extends State<DoctorRegistrationForm> {
                     ),
                     const DoctorIDUpload(),
                     const SizedBox(height: 20),
-                    Column(
-                      children: _hospitalFields, // Display all hospital fields
+                    Wrap(
+                      children:[ Column(
+                        children: _hospitalFields, // Display all hospital fields
+                      )],
                     ),
                     const SizedBox(height: 20),
                     IconButton(
