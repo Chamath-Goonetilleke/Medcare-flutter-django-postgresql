@@ -34,7 +34,7 @@ class _MedicineReminderState extends State<MedicineReminder> {
         ),
         body: TabBarView(
           children: [
-           const SetReminder(),
+           ReminderScreen(),
            const MyReminders(),
            SelectMedicinePage(prescription: widget.prescription)
 

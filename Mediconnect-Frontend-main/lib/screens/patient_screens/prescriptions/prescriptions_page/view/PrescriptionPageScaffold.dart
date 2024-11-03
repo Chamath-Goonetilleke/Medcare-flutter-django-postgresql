@@ -47,13 +47,17 @@ class _PrescriptionsScaffoldState extends State<PrescriptionsScaffold> {
 
           if (medicineData['status'] == "success") {
             // Extract medicines in the required format
-            List<String> prescriptions =
-                medicineData['data'].map<String>((medicine) {
+            List<Map<String, String>> prescriptions =
+                medicineData['data'].map<Map<String, String>>((medicine) {
               final name = medicine['Medicine'];
               final strength = medicine['Strength'];
               final quantity = medicine['Quantity'];
-              return "$name $strength - $quantity";
+              return {
+                "id": medicine['Medicine_ID'].toString(),
+                "text": "$name $strength - $quantity"
+              };
             }).toList();
+
 
             final keywordResponse = await http.get(Uri.parse(
                 "http://10.0.2.2:8000/api/keywords/prescription/${prescription['Prescription_ID']}"));

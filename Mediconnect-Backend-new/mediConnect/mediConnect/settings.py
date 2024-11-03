@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'prescription',
     'medicine',
     'keywords',
+    'pharmacy',
     'rest_framework'
 
 ]

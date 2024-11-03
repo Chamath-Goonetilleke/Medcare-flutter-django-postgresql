@@ -12,5 +12,6 @@ urlpatterns = [
     path('api/', include('appointment_queue.urls')),
     path('api/', include('prescription.urls')),
     path('api/', include('medicine.urls')),
-    path('api/', include('keywords.urls'))
+    path('api/', include('keywords.urls')),
+    path('api/', include('pharmacy.urls'))
 ]

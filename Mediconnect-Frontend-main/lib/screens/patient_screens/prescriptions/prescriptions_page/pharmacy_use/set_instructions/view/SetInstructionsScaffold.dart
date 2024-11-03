@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
-import '../widgets/widgets.dart';  // Import your custom widgets here
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SetInstructionsScaffold extends StatefulWidget {
-  final String medication;
+  final Map<String, dynamic> medication;
+  final Map<String, dynamic> instructions;
 
-  const SetInstructionsScaffold({Key? key, required this.medication}) : super(key: key);
+  const SetInstructionsScaffold({
+    Key? key,
+    required this.medication,
+    required this.instructions,
+  }) : super(key: key);
 
   @override
-  _SetInstructionsScaffoldState createState() => _SetInstructionsScaffoldState();
+  _SetInstructionsScaffoldState createState() =>
+      _SetInstructionsScaffoldState();
 }
 
 class _SetInstructionsScaffoldState extends State<SetInstructionsScaffold> {
+
+bool isLoading = true;
+
   bool intervalEnabled = false;
   bool timesPerDayEnabled = false;
   bool daysOfWeekEnabled = false;
@@ -18,164 +28,390 @@ class _SetInstructionsScaffoldState extends State<SetInstructionsScaffold> {
   bool quantityEnabled = false;
   bool turnOffEnabled = false;
 
+  int intervalHours = 6;
+  int timesPerDay = 3;
+  bool beforeMeal = false;
+  bool afterMeal = false;
+  int quantity = 2;
+  int turnOffWeeks = 2;
+  String additionalInstructions = '';
+  Map<String, bool> selectedDays = {
+    'Monday': false,
+    'Tuesday': false,
+    'Wednesday': false,
+    'Thursday': false,
+    'Friday': false,
+    'Saturday': false,
+    'Sunday': false,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFields();
+  }
+
+  Future<void> _initializeFields() async {
+    final uri = Uri.parse(
+        "http://10.0.2.2:8000/api/pharmacy/${widget.medication['id']}");
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+    final data = jsonDecode(response.body);
+    if (data['status'] == "success") {
+      final instructions = data['data'];
+      setState(() {
+        intervalEnabled = instructions['Interval'] != null;
+        intervalHours = intervalEnabled
+            ? int.tryParse(instructions['Interval'].split(' ')[0]) ?? 6
+            : 6;
+
+        timesPerDayEnabled = instructions['Times_per_day'] != null;
+        timesPerDay = timesPerDayEnabled ? instructions['Times_per_day'] : 3;
+
+        daysOfWeekEnabled = instructions.keys.any((day) =>
+            day == 'Monday' ||
+            day == 'Tuesday' ||
+            day == 'Wednesday' ||
+            day == 'Thursday' ||
+            day == 'Friday' ||
+            day == 'Saturday' ||
+            day == 'Sunday');
+        if (daysOfWeekEnabled) {
+          selectedDays.forEach((day, _) {
+            selectedDays[day] = instructions[day] ?? false;
+          });
+        }
+
+        mealTimingEnabled = instructions['Before_meal'] != null ||
+            instructions['After_meal'] != null;
+        beforeMeal = instructions['Before_meal'] ?? false;
+        afterMeal = instructions['After_meal'] ?? false;
+
+        quantityEnabled = instructions['Quantity'] != null;
+        quantity = quantityEnabled
+            ? int.tryParse(instructions['Quantity'].split(' ')[0]) ?? 2
+            : 2;
+
+        turnOffEnabled = instructions['Turn_off_after'] != null;
+        turnOffWeeks = turnOffEnabled
+            ? int.tryParse(instructions['Turn_off_after'].split(' ')[0]) ?? 2
+            : 2;
+
+        additionalInstructions = instructions['Notes'] ?? '';
+        isLoading = false;
+      });
+    }else{
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> saveInstructions() async {
+    final url = Uri.parse('http://10.0.2.2:8000/api/pharmacy/');
+    final requestData = {
+      "Medicine_ID": widget.medication['id'],
+      "Interval": intervalEnabled ? '$intervalHours hours' : null,
+      "Times_per_day": timesPerDayEnabled ? timesPerDay : null,
+      "Monday": selectedDays['Monday'],
+      "Tuesday": selectedDays['Tuesday'],
+      "Wednesday": selectedDays['Wednesday'],
+      "Thursday": selectedDays['Thursday'],
+      "Friday": selectedDays['Friday'],
+      "Saturday": selectedDays['Saturday'],
+      "Sunday": selectedDays['Sunday'],
+      "Before_meal": mealTimingEnabled ? beforeMeal : false,
+      "After_meal": mealTimingEnabled ? afterMeal : false,
+      "Quantity": quantityEnabled ? '$quantity pills' : null,
+      "Turn_off_after": turnOffEnabled ? '$turnOffWeeks weeks' : null,
+      "Notes": additionalInstructions,
+    };
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(requestData),
+      );
+
+      if (response.statusCode == 201) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text('Success'),
+            content: Text('Instructions saved successfully!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        final errorData = jsonDecode(response.body);
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text('Error'),
+            content:
+                Text('Failed to save instructions: ${errorData["message"]}'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (error) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text('Network Error'),
+          content: Text('Unable to contact server. Please try again later.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.medication),
+        title: Text(widget.medication['text']),
         backgroundColor: Colors.green,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              buildToggleField(
-                'Interval',
-                enabled: intervalEnabled,
-                onChanged: (value) {
-                  setState(() => intervalEnabled = value);
-                },
-                child: intervalEnabled
-                    ? Row(
-                        children: [
-                          DropdownButton<int>(
-                            value: 6, // Default value
-                            items: List.generate(12, (index) => DropdownMenuItem(
-                              value: index + 1,
-                              child: Text('${index + 1} hours'),
-                            )),
-                            onChanged: (value) {},
-                          ),
-                        ],
-                      )
-                    : null,
-              ),
-              buildToggleField(
-                'Times per Day',
-                enabled: timesPerDayEnabled,
-                onChanged: (value) {
-                  setState(() => timesPerDayEnabled = value);
-                },
-                child: timesPerDayEnabled
-                    ? Row(
-                        children: [
-                          DropdownButton<int>(
-                            value: 3, // Default value
-                            items: List.generate(10, (index) => DropdownMenuItem(
-                              value: index + 1,
-                              child: Text('${index + 1} times'),
-                            )),
-                            onChanged: (value) {},
-                          ),
-                        ],
-                      )
-                    : null,
-              ),
-              buildToggleField(
-                'Specified Days of the Week',
-                enabled: daysOfWeekEnabled,
-                onChanged: (value) {
-                  setState(() => daysOfWeekEnabled = value);
-                },
-                child: daysOfWeekEnabled
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: List.generate(7, (index) {
-                          return Checkbox(
-                            value: false,
-                            onChanged: (value) {},
-                          );
-                        }),
-                      )
-                    : null,
-              ),
-              buildToggleField(
-                'Select Meal Timing',
-                enabled: mealTimingEnabled,
-                onChanged: (value) {
-                  setState(() => mealTimingEnabled = value);
-                },
-                child: mealTimingEnabled
-                    ? Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                              ),
-                              child: const Text('Before Meal'),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey,
-                              ),
-                              child: const Text('After Meal'),
-                            ),
-                          ),
-                        ],
-                      )
-                    : null,
-              ),
-              buildToggleField(
-                'Quantity',
-                enabled: quantityEnabled,
-                onChanged: (value) {
-                  setState(() => quantityEnabled = value);
-                },
-                child: quantityEnabled
-                    ? Row(
-                        children: [
-                          DropdownButton<int>(
-                            value: 2, // Default value
-                            items: List.generate(10, (index) => DropdownMenuItem(
-                              value: index + 1,
-                              child: Text('${index + 1} pills'),
-                            )),
-                            onChanged: (value) {},
-                          ),
-                        ],
-                      )
-                    : null,
-              ),
-              buildToggleField(
-                'Turn off after',
-                enabled: turnOffEnabled,
-                onChanged: (value) {
-                  setState(() => turnOffEnabled = value);
-                },
-                child: turnOffEnabled
-                    ? Row(
-                        children: [
-                          DropdownButton<int>(
-                            value: 2, // Default value
-                            items: List.generate(10, (index) => DropdownMenuItem(
-                              value: index + 1,
-                              child: Text('${index + 1} weeks'),
-                            )),
-                            onChanged: (value) {},
-                          ),
-                        ],
-                      )
-                    : null,
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Additional Instructions',
-                  border: OutlineInputBorder(),
+        child: isLoading ? const Center(child: CircularProgressIndicator(),): SingleChildScrollView(
+                child: Column(
+                  children: [
+                    buildToggleField(
+                      'Interval',
+                      enabled: intervalEnabled,
+                      onChanged: (value) {
+                        setState(() => intervalEnabled = value);
+                      },
+                      child: intervalEnabled
+                          ? Row(
+                              children: [
+                                DropdownButton<int>(
+                                  value: intervalHours,
+                                  items: List.generate(
+                                      12,
+                                      (index) => DropdownMenuItem(
+                                            value: index + 1,
+                                            child: Text('${index + 1} hours'),
+                                          )),
+                                  onChanged: (value) {
+                                    setState(() => intervalHours = value!);
+                                  },
+                                ),
+                              ],
+                            )
+                          : null,
+                    ),
+                    buildToggleField(
+                      'Times per Day',
+                      enabled: timesPerDayEnabled,
+                      onChanged: (value) {
+                        setState(() => timesPerDayEnabled = value);
+                      },
+                      child: timesPerDayEnabled
+                          ? Row(
+                              children: [
+                                DropdownButton<int>(
+                                  value: timesPerDay,
+                                  items: List.generate(
+                                      10,
+                                      (index) => DropdownMenuItem(
+                                            value: index + 1,
+                                            child: Text('${index + 1} times'),
+                                          )),
+                                  onChanged: (value) {
+                                    setState(() => timesPerDay = value!);
+                                  },
+                                ),
+                              ],
+                            )
+                          : null,
+                    ),
+                    buildToggleField(
+                      'Specified Days of the Week',
+                      enabled: daysOfWeekEnabled,
+                      onChanged: (value) {
+                        setState(() => daysOfWeekEnabled = value);
+                      },
+                      child: daysOfWeekEnabled
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: selectedDays.keys.map((day) {
+                                return Column(
+                                  children: [
+                                    Text(day.substring(0, 3)),
+                                    Checkbox(
+                                      value: selectedDays[day],
+                                      onChanged: (value) {
+                                        setState(
+                                            () => selectedDays[day] = value!);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            )
+                          : null,
+                    ),
+                    buildToggleField(
+                      'Select Meal Timing',
+                      enabled: mealTimingEnabled,
+                      onChanged: (value) {
+                        setState(() => mealTimingEnabled = value);
+                      },
+                      child: mealTimingEnabled
+                          ? Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () => setState(() {
+                                      beforeMeal = true;
+                                      afterMeal = false;
+                                    }),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: beforeMeal
+                                          ? Colors.green
+                                          : Colors.grey,
+                                    ),
+                                    child: const Text('Before Meal'),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () => setState(() {
+                                      afterMeal = true;
+                                      beforeMeal = false;
+                                    }),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: afterMeal
+                                          ? Colors.green
+                                          : Colors.grey,
+                                    ),
+                                    child: const Text('After Meal'),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : null,
+                    ),
+                    buildToggleField(
+                      'Quantity',
+                      enabled: quantityEnabled,
+                      onChanged: (value) {
+                        setState(() => quantityEnabled = value);
+                      },
+                      child: quantityEnabled
+                          ? Row(
+                              children: [
+                                DropdownButton<int>(
+                                  value: quantity,
+                                  items: List.generate(
+                                      10,
+                                      (index) => DropdownMenuItem(
+                                            value: index + 1,
+                                            child: Text('${index + 1} pills'),
+                                          )),
+                                  onChanged: (value) {
+                                    setState(() => quantity = value!);
+                                  },
+                                ),
+                              ],
+                            )
+                          : null,
+                    ),
+                    buildToggleField(
+                      'Turn off after',
+                      enabled: turnOffEnabled,
+                      onChanged: (value) {
+                        setState(() => turnOffEnabled = value);
+                      },
+                      child: turnOffEnabled
+                          ? Row(
+                              children: [
+                                DropdownButton<int>(
+                                  value: turnOffWeeks,
+                                  items: List.generate(
+                                      10,
+                                      (index) => DropdownMenuItem(
+                                            value: index + 1,
+                                            child: Text('${index + 1} weeks'),
+                                          )),
+                                  onChanged: (value) {
+                                    setState(() => turnOffWeeks = value!);
+                                  },
+                                ),
+                              ],
+                            )
+                          : null,
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Additional Instructions',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                      onChanged: (value) {
+                        setState(() => additionalInstructions = value);
+                      },
+                      controller:
+                          TextEditingController(text: additionalInstructions),
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: saveInstructions,
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 40),
+                          backgroundColor: Colors.green,
+                        ),
+                        child: const Text(
+                          "Save Instructions",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                maxLines: 3,
               ),
-            ],
-          ),
-        ),
+      
       ),
+    );
+  }
+
+  Widget buildToggleField(String title,
+      {required bool enabled,
+      required ValueChanged<bool> onChanged,
+      Widget? child}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          title: Text(title),
+          value: enabled,
+          onChanged: onChanged,
+        ),
+        if (enabled && child != null) child,
+      ],
     );
   }
 }

@@ -44,7 +44,7 @@ class PrescriptionCard extends StatelessWidget {
               const SizedBox(height: 10),
               ...prescription['medications'].map<Widget>((medication) {
                 return Text(
-                  medication,
+                  medication['text'],
                   style: const TextStyle(
                     fontSize: 14,
                   ),
