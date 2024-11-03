@@ -117,7 +117,7 @@ class _HomeState extends State<Home> {
         queueId = data['data']['Queue_ID'];
       });
       final res = await http.get(Uri.parse(
-          "http://10.0.2.2:8000/api/appointments/getByQueue/${data['data']['Queue_ID']}"));
+          "http://10.0.2.2:8000/api/appointments/getFilteredQueue/${data['data']['Queue_ID']}"));
       final queueData = jsonDecode(res.body);
 
       if (queueData['status'] == "success") {

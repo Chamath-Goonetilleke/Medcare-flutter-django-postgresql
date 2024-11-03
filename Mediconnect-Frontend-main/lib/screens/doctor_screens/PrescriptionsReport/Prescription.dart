@@ -1,9 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
+import 'package:mediconnect/repository/appointment_repository.dart';
 import 'package:mediconnect/screens/doctor_screens/PrescriptionsReport/AddNewPrecription.dart';
+import 'package:http/http.dart' as http;
+import 'package:mediconnect/screens/doctor_screens/doctormain.dart';
 
 class PrescriptionsReportsScreen extends StatefulWidget {
-  const PrescriptionsReportsScreen({Key? key}) : super(key: key);
+  final Map<String, dynamic> presDetails;
+  const PrescriptionsReportsScreen({Key? key, required this.presDetails})
+      : super(key: key);
 
   @override
   _PrescriptionsReportsScreenState createState() =>
@@ -15,33 +22,10 @@ class _PrescriptionsReportsScreenState
   bool prescribedByMe = false;
   String keyword = '';
   DateTime? selectedDate;
-  final currentLoggedDoctorID = 1;
-
-  final List<Map<String, dynamic>> reports = [
-    {
-      'doctorID': 1,
-      'date': DateTime(2024, 2, 15),
-      'doctorName': "Dr. John Doe (Cardiac Surgeon)",
-      'prescriptions': [
-        "Panadine 20mg - 10 tablets",
-        "Digene 5mg - 5 tablets",
-        "Pantodac 10mg - 10 tablets"
-      ],
-      'progress': "60%",
-      'keywords': ["Gastritis"],
-    },
-    {
-      'doctorID': 2,
-      'date': DateTime(2024, 3, 20),
-      'doctorName': "Dr. Jane Smith (Pediatrician)",
-      'prescriptions': [
-        "Amoxicillin 500mg - 7 capsules",
-        "Paracetamol 10mg - 5 tablets"
-      ],
-      'progress': "80%",
-      'keywords': ["Cold", "Fever"],
-    },
-  ];
+  int? currentLoggedDoctorID;
+  bool isLoading = true;
+  final AppointmentRepository _appointmentRepository = AppointmentRepository();
+  List<Map<String, dynamic>> reports = [];
 
   List<Map<String, dynamic>> get filteredReports {
     return reports.where((report) {
@@ -74,115 +58,225 @@ class _PrescriptionsReportsScreenState
     }
   }
 
+  Future<void> fetchPrescriptions() async {
+    setState(() {
+      reports = [];
+    });
+    final res = await http.get(Uri.parse(
+        "http://10.0.2.2:8000/api/prescriptions/patient/${widget.presDetails['patientId']}"));
+    final prescriptionData = jsonDecode(res.body);
+
+    if (prescriptionData['status'] == "success") {
+      List<dynamic> presList = prescriptionData['data'];
+
+      // Iterate through each prescription
+      for (var prescription in presList) {
+        final medicineResponse = await http.get(Uri.parse(
+            "http://10.0.2.2:8000/api/medicines/prescription/${prescription['Prescription_ID']}"));
+        final medicineData = jsonDecode(medicineResponse.body);
+
+        if (medicineData['status'] == "success") {
+          // Extract medicines in the required format
+          List<String> prescriptions =
+              medicineData['data'].map<String>((medicine) {
+            final name = medicine['Medicine'];
+            final strength = medicine['Strength'];
+            final quantity = medicine['Quantity'];
+            return "$name $strength - $quantity";
+          }).toList();
+
+          final keywordResponse = await http.get(Uri.parse(
+              "http://10.0.2.2:8000/api/keywords/prescription/${prescription['Prescription_ID']}"));
+          final keywordData = jsonDecode(keywordResponse.body);
+
+          if (keywordData['status'] == "success") {
+            String dateString = prescription['Date'].toString();
+            DateTime parsedDate = DateTime.parse(dateString);
+            DateTime dateOnly =
+                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+
+            if (prescription['IsHide'] == false) {
+              setState(() {
+                reports.add({
+                  'doctorID': prescription['Doctor_ID']['Doctor_ID'],
+                  'date': dateOnly,
+                  'doctorName':
+                      "Dr. ${prescription['Doctor_ID']['First_name']} ${prescription['Doctor_ID']['Last_name']} (${prescription['Doctor_ID']['Specialization']})",
+                  'prescriptions': prescriptions,
+                  'progress': prescription['Progress'],
+                  'keywords': List<String>.from(
+                      keywordData['data'].map((k) => k['Keyword'])),
+                });
+              });
+            }
+          }
+        }
+      }
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPrescriptions();
+    currentLoggedDoctorID = int.parse(widget.presDetails['docId'].toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Prescriptions/Reports'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // "Prescribed by me" Checkbox
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Prescribed by me',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  Checkbox(
-                    value: prescribedByMe,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        prescribedByMe = value!;
-                      });
-                    },
-                    activeColor: Colors.green,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Filter by Keyword
-              TextFormField(
-                onChanged: (value) {
-                  setState(() {
-                    keyword = value;
-                  });
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Filter by keyword...',
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.filter_alt_outlined),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Filter by Date with Date Picker
-              TextFormField(
-                readOnly: true,
-                onTap: () => _selectDate(context),
-                decoration: InputDecoration(
-                  labelText: selectedDate == null
-                      ? 'Filter by date...'
-                      : DateFormat('yyyy-MM-dd').format(selectedDate!),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: const Icon(Icons.calendar_today),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Display Reports in ListView
-              filteredReports.isEmpty
-                  ? const Text("No reports found matching the criteria.")
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredReports.length,
-                      itemBuilder: (context, index) {
-                        final report = filteredReports[index];
-                        return _buildReportCard(report);
-                      },
-                    ),
-
-              const SizedBox(height: 20),
-
-              // "Add new" Button
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AddPrescriptionScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                    backgroundColor: Colors.blueAccent,
-                  ),
-                  child: const Text(
-                    "Add new",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              ),
-            ],
+        appBar: AppBar(
+          title: const Text('Prescriptions/Reports'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
           ),
         ),
-      ),
-    );
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: fetchPrescriptions,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // "Prescribed by me" Checkbox
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Prescribed by me',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            Checkbox(
+                              value: prescribedByMe,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  prescribedByMe = value!;
+                                });
+                              },
+                              activeColor: Colors.green,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Filter by Keyword
+                        TextFormField(
+                          onChanged: (value) {
+                            setState(() {
+                              keyword = value;
+                            });
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'Filter by keyword...',
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.filter_alt_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Filter by Date with Date Picker
+                        TextFormField(
+                          readOnly: true,
+                          onTap: () => _selectDate(context),
+                          decoration: InputDecoration(
+                            labelText: selectedDate == null
+                                ? 'Filter by date...'
+                                : DateFormat('yyyy-MM-dd')
+                                    .format(selectedDate!),
+                            border: const OutlineInputBorder(),
+                            suffixIcon: const Icon(Icons.calendar_today),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => AddPrescriptionScreen(
+                                          presDetails: widget.presDetails,
+                                        )),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 40),
+                              backgroundColor: Colors.blueAccent,
+                            ),
+                            child: const Text(
+                              "+ Add new",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Display Reports in ListView
+                        filteredReports.isEmpty
+                            ? const Text(
+                                "No reports found matching the criteria.")
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: filteredReports.length,
+                                itemBuilder: (context, index) {
+                                  final report = filteredReports[index];
+                                  return _buildReportCard(report);
+                                },
+                              ),
+
+                        const SizedBox(height: 20),
+
+                        // "Add new" Button
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final appResponse = await _appointmentRepository
+                                  .updateAppointment(
+                                      appointment:
+                                          jsonEncode({"Status": "Completed"}),
+                                      apId:
+                                          widget.presDetails['appointmentId']);
+
+                              if (appResponse['status'] == "success") {
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Appointment Completed')),
+                                );
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          DoctorHomeScreen()),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 40),
+                              backgroundColor: Colors.green,
+                            ),
+                            child: const Text(
+                              "Complete Appointment",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )));
   }
 
-  // Report Card Widget
   Widget _buildReportCard(Map<String, dynamic> report) {
     return Card(
       elevation: 2,

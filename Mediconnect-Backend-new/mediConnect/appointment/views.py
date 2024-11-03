@@ -32,7 +32,15 @@ def get_all_appointments_by_queue_id(request, queue_id):
                     status=status.HTTP_200_OK)
 
 
-# Get an appointment by ID
+@api_view(['GET'])
+def get_all_filtered_appointments_by_queue_id(request, queue_id):
+    appointments = Appointment.objects.filter(Queue_ID=queue_id, Status="Queued")
+    serializer = AppointmentSerializer(appointments, many=True)
+    return Response({"status": "success", "data": serializer.data, "queue_length": len(appointments)},
+                    status=status.HTTP_200_OK)
+
+
+# Get an appointment by IDr
 @api_view(['GET'])
 def get_appointment_by_id(request, pk):
     try:
@@ -51,7 +59,7 @@ def update_appointment(request, pk):
     except Appointment.DoesNotExist:
         return Response({"status": "error", "message": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = AppointmentSerializer(instance=appointment, data=request.data, partial=True)
+    serializer = AppointmentAddSerializer(instance=appointment, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)

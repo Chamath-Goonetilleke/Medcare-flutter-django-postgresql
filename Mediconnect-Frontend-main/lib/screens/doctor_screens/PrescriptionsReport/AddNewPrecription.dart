@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:mediconnect/repository/prescription_repository.dart';
 
 class AddPrescriptionScreen extends StatefulWidget {
-  const AddPrescriptionScreen({Key? key}) : super(key: key);
+  final Map<String, dynamic> presDetails;
+  const AddPrescriptionScreen({Key? key, required this.presDetails})
+      : super(key: key);
 
   @override
   _AddPrescriptionScreenState createState() => _AddPrescriptionScreenState();
@@ -11,6 +16,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   final List<Map<String, dynamic>> medicines = [];
   final List<String> keywords = [];
   String selectedDiagnosis = '';
+  bool isHide = false;
+  final PrescriptionRepository _prescriptionRepository =
+      PrescriptionRepository();
 
   void _addMedicine() {
     setState(() {
@@ -26,11 +34,69 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     });
   }
 
-  void _submitData() {
-    print('Diagnosis: $selectedDiagnosis');
-    print('Medicines: $medicines');
-    print('Keywords: $keywords');
-    // Here, you would normally send the data to the backend.
+  List<Map<String, dynamic>> _setKeyword(int prescriptionId) {
+    List<Map<String, dynamic>> keywordData = keywords.map((key) {
+      return {"Prescription_ID": prescriptionId, "Keyword": key};
+    }).toList();
+    return keywordData;
+  }
+
+  List<Map<String, dynamic>> _setMedicine(int prescriptionId) {
+    List<Map<String, dynamic>> medicineData = medicines.map((med) {
+      return {
+        "Prescription_ID": prescriptionId,
+        "Medicine": med['medicine'],
+        "Quantity": "${med['quantity']} ${med['quantityUnit']}",
+        "Strength": "${med['strength']} ${med['strengthUnit']}",
+        "Duration": "${med['duration']} ${med['durationUnit']}"
+      };
+    }).toList();
+    return medicineData;
+  }
+
+  void _submitData() async {
+    Map<String, dynamic> prescription = {
+      "Doctor_ID": widget.presDetails['docId'],
+      "Patient_ID": widget.presDetails['patientId'],
+      "Date": DateTime.now().toString(),
+      "IsHide": isHide
+    };
+
+    final presResponse = await _prescriptionRepository.createPrescription(
+        prescription: jsonEncode(prescription));
+
+    if (presResponse['status'] == "success") {
+      List<Map<String, dynamic>> keywordData =
+          _setKeyword(presResponse['data']['Prescription_ID']);
+      List<Map<String, dynamic>> medicineData =
+          _setMedicine(presResponse['data']['Prescription_ID']);
+      print(keywordData);
+      print(medicineData);
+      final mediResponse = await _prescriptionRepository.createMedicine(
+          medicine: jsonEncode(medicineData));
+      if (mediResponse['status'] == "success") {
+        final keywordResponse = await _prescriptionRepository.createKeywords(
+            keyword: jsonEncode(keywordData));
+        if (keywordResponse['status'] == "success") {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Prescription Added Successfully')),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error Adding Keywords')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error Adding Medicine')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error Adding Prescription')),
+      );
+    }
   }
 
   void _addKeyword() {
@@ -45,7 +111,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   @override
   void initState() {
     super.initState();
-    _addMedicine(); // Initialize with one medicine section
+    _addMedicine();
   }
 
   @override
@@ -133,7 +199,13 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
               children: [
                 Row(
                   children: [
-                    Checkbox(value: false, onChanged: (bool? value) {}),
+                    Checkbox(
+                        value: isHide,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isHide = !isHide;
+                          });
+                        }),
                     const Text("Hide Prescription"),
                   ],
                 ),

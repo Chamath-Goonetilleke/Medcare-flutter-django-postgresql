@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/widgets.dart'; // Import all widgets from the widgets.dart file
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mediconnect/widgets/bottom_nav_bar/PatientBottomNavBar.dart';
@@ -19,12 +20,9 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
   final String userEmail = "johndoe@example.com";
   List<dynamic> appointments = [];
   bool isLoading = true;
+  String? _patientId;
 
-  @override
-  void initState() {
-    super.initState();
-    fetchData();
-  }
+  
 
   Future<void> fetchData() async {
     final response =
@@ -42,6 +40,30 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
     }
   }
 
+  void getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_id');
+
+    final uri =
+        Uri.parse("http://10.0.2.2:8000/api/patient/getByUserId/$userId");
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+    final data = jsonDecode(response.body);
+    if (data['status'] == "success") {
+      setState(() {
+        _patientId = data['data']['Patient_ID'].toString();
+      });
+    fetchData();
+      print(" pid: ${data['data']['Patient_ID'].toString()}");
+    }
+  }
+@override
+  void initState() {
+    super.initState();
+    getUserId();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,7 +87,7 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
                 children: [
                   Center(
                     child: QrImageView(
-                      data: userEmail,
+                      data: _patientId.toString(),
                       size: 200.0,
                     ),
                   ),
@@ -83,7 +105,8 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
                         return AppointmentButton(
                           color: appointment['Status'] == "Queued"
                               ? Colors.yellow
-                              : Colors.red,
+                              :appointment['Status'] == "Completed"
+                              ? Colors.green: Colors.red,
                           text:
                               "${appointment['Disease']} - Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
                           onPressed: () {

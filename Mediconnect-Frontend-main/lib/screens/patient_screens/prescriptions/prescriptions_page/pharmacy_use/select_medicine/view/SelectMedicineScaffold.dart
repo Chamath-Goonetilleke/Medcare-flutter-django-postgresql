@@ -9,10 +9,6 @@ class SelectMedicineScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select Medicine'),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      ),
       body: ListView.builder(
         itemCount: prescription['medications'].length,
         itemBuilder: (context, index) {

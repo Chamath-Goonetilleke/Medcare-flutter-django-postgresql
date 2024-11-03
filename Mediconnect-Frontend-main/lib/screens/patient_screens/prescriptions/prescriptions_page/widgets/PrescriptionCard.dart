@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mediconnect/screens/patient_screens/medicine_reminder/medicine_reminder.dart';
 import 'package:mediconnect/screens/patient_screens/prescriptions/prescriptions_page/pharmacy_use/select_medicine/SelectMedicine.dart'; // Import routing
 
 class PrescriptionCard extends StatelessWidget {
@@ -14,7 +15,7 @@ class PrescriptionCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SelectMedicinePage(prescription: prescription),
+            builder: (context) => MedicineReminder(prescription: prescription),
           ),
         );
       },
