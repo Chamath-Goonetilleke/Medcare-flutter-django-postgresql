@@ -5,8 +5,8 @@ from medicine.models import Medicine
 
 class Pharmacy(models.Model):
     Medicine_ID = models.OneToOneField(Medicine, on_delete=models.CASCADE, primary_key=True)
-    Interval = models.CharField(max_length=255)
-    Times_per_day = models.IntegerField()
+    Interval = models.CharField(max_length=255, null=True)
+    Times_per_day = models.IntegerField(null=True)
     Monday = models.BooleanField(default=False)
     Tuesday = models.BooleanField(default=False)
     Wednesday = models.BooleanField(default=False)
@@ -18,5 +18,6 @@ class Pharmacy(models.Model):
     After_meal = models.BooleanField(default=False)
     Quantity = models.CharField(max_length=255)
     Turn_off_after = models.CharField(max_length=255)
+    IsReminderSet = models.BooleanField(default=False)
     Notes = models.TextField()
 

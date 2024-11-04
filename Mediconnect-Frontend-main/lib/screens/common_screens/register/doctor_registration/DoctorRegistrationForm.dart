@@ -92,7 +92,7 @@ class _DoctorRegistrationFormState extends State<DoctorRegistrationForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Doctor Registration')),
-      body: Stack(
+      body: RefreshIndicator(child: Stack(
         children: [
           Container(
             decoration: const BoxDecoration(
@@ -220,6 +220,10 @@ class _DoctorRegistrationFormState extends State<DoctorRegistrationForm> {
           ),
         ],
       ),
+     onRefresh: (){
+      return Future.value("");
+      
+    })
     );
   }
 

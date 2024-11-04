@@ -315,6 +315,7 @@ class VisitingHospitalField extends StatefulWidget {
   final Function(Map<String, dynamic>) onHospitalDataChanged;
   final int index;
 
+
   VisitingHospitalField({
     required this.onHospitalDataChanged,
     required this.index,
@@ -337,10 +338,10 @@ class _VisitingHospitalFieldState extends State<VisitingHospitalField> {
   TimeOfDay? appointedEndTime;
   TimeOfDay? appointlessStartTime;
   TimeOfDay? appointlessEndTime;
-
   final hospitalRepository = HospitalRepository();
   String? _selectedHospital;
-
+final GlobalKey<HospitalDropdownState> _childKey =
+      GlobalKey<HospitalDropdownState>();
   final List<String> daysOfWeek = [
     'Mon',
     'Tue',
@@ -433,6 +434,7 @@ class _VisitingHospitalFieldState extends State<VisitingHospitalField> {
                   }));
 
                   if (response['status'] == "success") {
+                    _childKey.currentState?.fetchMedicalCenters();
                     Navigator.of(context).pop();
                   }
                   if (response['status'] == "error") {
@@ -468,6 +470,7 @@ class _VisitingHospitalFieldState extends State<VisitingHospitalField> {
               children: [
                 Expanded(
                   child: HospitalDropdown(
+                    key: _childKey,
                     selectedHospital: _selectedHospital,
                     onHospitalChanged: (hospital) {
                       setState(() {

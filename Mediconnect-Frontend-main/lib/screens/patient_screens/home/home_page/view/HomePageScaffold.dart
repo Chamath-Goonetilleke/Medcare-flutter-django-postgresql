@@ -36,6 +36,9 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
       appointments = data['data'] as List;
       print("${appointments[0]['Disease']}");
     } else {
+      setState(() {
+        isLoading = false;
+      });
       throw Exception('Failed to load doctors');
     }
   }
@@ -97,6 +100,7 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
+                  appointments.length > 0?
                   Expanded(
                     child: ListView.builder(
                       itemCount: appointments.length,
@@ -133,7 +137,11 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
                         );
                       },
                     ),
-                  ),
+                  )
+                : const Padding(
+                  padding: EdgeInsets.fromLTRB(8, 40, 8, 8),
+                  child: Center(child: Text("No Appointment Available"),),
+                )
                 ],
               ),
             ),

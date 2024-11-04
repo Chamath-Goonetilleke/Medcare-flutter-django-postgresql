@@ -12,7 +12,6 @@ class PrescriptionSerializer(serializers.ModelSerializer):
 
 class MedicineSerializer(serializers.ModelSerializer):
     Prescription_ID = PrescriptionSerializer()
-
     class Meta:
         model = Medicine
         fields = '__all__'

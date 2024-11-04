@@ -13,10 +13,10 @@ class HospitalDropdown extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<HospitalDropdown> createState() => _HospitalDropdownState();
+  State<HospitalDropdown> createState() => HospitalDropdownState();
 }
 
-class _HospitalDropdownState extends State<HospitalDropdown> {
+class HospitalDropdownState extends State<HospitalDropdown> {
   final List<String> hospitals = [
     'Cardiologist',
     'Orthopedic Surgeon',
@@ -26,7 +26,7 @@ class _HospitalDropdownState extends State<HospitalDropdown> {
     'Other'
   ];
 
-  Future<List<Map<String, dynamic>>> _fetchMedicalCenters() async {
+  Future<List<Map<String, dynamic>>> fetchMedicalCenters() async {
     final response =
         await http.get(Uri.parse('http://10.0.2.2:8000/api/hospitals/'));
     if (response.statusCode == 200) {
@@ -46,7 +46,7 @@ class _HospitalDropdownState extends State<HospitalDropdown> {
   Widget build(BuildContext context) {
     return Material(
       child: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _fetchMedicalCenters(),
+        future: fetchMedicalCenters(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');

@@ -107,7 +107,7 @@ class _HomeState extends State<Home> {
         body: jsonEncode({
           "Doctor_ID": doctor!['Doctor_ID'],
           "Hospital_ID": selectedMedicalCenterId,
-          "Date": '2024-11-25'
+          "Date": '2024-11-04'
         }));
     final data = jsonDecode(response.body);
 
@@ -205,7 +205,7 @@ class _HomeState extends State<Home> {
                                     return DropdownMenuItem<String>(
                                       value: center['Hospital_ID'].toString(),
                                       child: Text(
-                                          '${center['Name']} - ${center['Location']}'),
+                                          '${center['Name']} - ${center['Location']}', style: TextStyle(fontSize: 13),),
                                     );
                                   }).toList(),
                                   onChanged: (String? value) async {
@@ -303,6 +303,7 @@ class _HomeState extends State<Home> {
             const AddTodaysTask(),
           ],
         ),
+     
       ),
     );
   }

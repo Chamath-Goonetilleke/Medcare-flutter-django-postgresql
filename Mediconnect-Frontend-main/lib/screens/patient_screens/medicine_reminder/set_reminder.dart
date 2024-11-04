@@ -1,13 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mediconnect/models/MedicineReminder.dart';
 import 'package:mediconnect/repository/reminder_repository.dart';
+import 'package:http/http.dart' as http;
 
 class ReminderScreen extends StatefulWidget {
+  final Map<String, dynamic> prescription;
+
+  const ReminderScreen({super.key, required this.prescription});
+
   @override
   _ReminderScreenState createState() => _ReminderScreenState();
 }
 
 class _ReminderScreenState extends State<ReminderScreen> {
+  bool isLoading = true;
   final ReminderRepository apiService = ReminderRepository();
   late Future<List<MedicineReminder>> reminders;
   final List<MedicineReminder> sampleReminders = [
@@ -49,36 +57,78 @@ class _ReminderScreenState extends State<ReminderScreen> {
     ),
   ];
 
+  void getMedicineIds() async {
+    List<MedicineReminder> results =
+        []; // Step 1: Initialize an empty list to store results
+
+    List<Future<void>> requests =
+        widget.prescription['medications'].map<Future<void>>((med) async {
+      final uri = Uri.parse("http://10.0.2.2:8000/api/pharmacy/${med['id']}");
+      final response = await http.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      final data = jsonDecode(response.body);
+      if (data['status'] == "success" &&
+          data['data']['IsReminderSet'] == false) {
+
+        
+        results.add(MedicineReminder(
+          medicineId: data['data']['Medicine_ID']['Medicine_ID'],
+          medicine: data['data']['Medicine_ID']['Medicine'],
+          strength: data['data']['Medicine_ID']['Strength'],
+          interval: data['data']['Interval'],
+          timesPerDay: data['data']['Times_per_day'],
+          beforeMeal: data['data']['Before_meal'],
+          afterMeal: data['data']['After_meal'],
+          quantity: data['data']['Quantity'],
+          turnOffAfter: data['data']['Turn_off_after'],
+          notes: data['data']['Notes'],
+        )); // Step 2: Add the data to the results listr
+      }
+    }).toList(); // Ensure toList() is called on the entire map
+
+    await Future.wait(requests); // Wait for all requests to complete
+
+    setState(() {
+      reminders = Future.value(results);
+      isLoading = false;
+    }); // Step 3: Print the results array
+  }
+
   @override
   void initState() {
     super.initState();
     //reminders = apiService.fetchReminders();
-    reminders = Future.value(sampleReminders);
+    //reminders = Future.value(sampleReminders);
+    getMedicineIds();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<List<MedicineReminder>>(
-        future: reminders,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No reminders found.'));
-          }
+      body: isLoading ? const Center(child: CircularProgressIndicator(),): FutureBuilder<List<MedicineReminder>>(
+              future: reminders,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No reminders found.'));
+                }
 
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              final reminder = snapshot.data![index];
-              return ReminderCard(reminder: reminder);
-            },
-          );
-        },
-      ),
+                return ListView.builder(
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    final reminder = snapshot.data![index];
+                    return ReminderCard(reminder: reminder);
+                  },
+                );
+              },
+            ),
+    
     );
   }
 }
@@ -127,7 +177,37 @@ class _ReminderCardState extends State<ReminderCard> {
         widget.reminder.selectedTimes = selectedTimes;
       }
 
-      print(widget.reminder.toJson());
+      List<Map<String, dynamic>>  reminders=[];
+      if(widget.reminder.interval != null) { 
+       reminders.add({
+        "medicineID":widget.reminder.medicineId,
+        "time": widget.reminder.startTime.toString(),
+        "quantity":widget.reminder.quantity,
+        "after_meal":widget.reminder.afterMeal,
+        "before_meal":widget.reminder.beforeMeal
+       });
+       reminders.add({
+          "medicineID": widget.reminder.medicineId,
+          "time": widget.reminder.endTime.toString(),
+          "quantity": widget.reminder.quantity,
+          "after_meal": widget.reminder.afterMeal,
+          "before_meal": widget.reminder.beforeMeal
+        });
+      }
+      if(widget.reminder.timesPerDay != null){
+        
+        for (var selectedTime in selectedTimes) {
+          reminders.add({
+            "medicineID": widget.reminder.medicineId,
+            "time": selectedTime,
+            "quantity": widget.reminder.quantity,
+            "after_meal": widget.reminder.afterMeal,
+            "before_meal": widget.reminder.beforeMeal
+          });
+        }
+
+      }
+      print(reminders);
       // await apiService.saveReminder(widget.reminder);
       // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Reminder saved successfully')));
     } catch (e) {
@@ -188,7 +268,7 @@ class _ReminderCardState extends State<ReminderCard> {
 
             ElevatedButton(
               onPressed: _saveReminder,
-              child: const Text('Save Reminder'),
+              child: const Text('Set Reminder'),
             ),
           ],
         ),

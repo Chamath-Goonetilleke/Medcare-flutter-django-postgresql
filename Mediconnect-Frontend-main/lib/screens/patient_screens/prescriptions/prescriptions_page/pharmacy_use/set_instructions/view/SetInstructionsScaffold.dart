@@ -1,3 +1,65 @@
+// buildToggleField(
+//                       'Interval',
+//                       enabled: intervalEnabled,
+//                       onChanged: (value) {
+//                         setState(() {
+//                           intervalEnabled = value;
+//                           if (intervalEnabled) {
+//                             timesPerDayEnabled =
+//                                 false; // Disable Times per Day if Interval is enabled
+//                           }
+//                         });
+//                       },
+//                       child: intervalEnabled
+//                           ? Row(
+//                               children: [
+//                                 DropdownButton<int>(
+//                                   value: intervalHours,
+//                                   items: List.generate(
+//                                       12,
+//                                       (index) => DropdownMenuItem(
+//                                             value: index + 1,
+//                                             child: Text('${index + 1} hours'),
+//                                           )),
+//                                   onChanged: (value) {
+//                                     setState(() => intervalHours = value!);
+//                                   },
+//                                 ),
+//                               ],
+//                             )
+//                           : null,
+//                     ),
+//                     buildToggleField(
+//                       'Times per Day',
+//                       enabled: timesPerDayEnabled,
+//                       onChanged: (value) {
+//                         setState(() {
+//                           timesPerDayEnabled = value;
+//                           if (timesPerDayEnabled) {
+//                             intervalEnabled =
+//                                 false; // Disable Interval if Times per Day is enabled
+//                           }
+//                         });
+//                       },
+//                       child: timesPerDayEnabled
+//                           ? Row(
+//                               children: [
+//                                 DropdownButton<int>(
+//                                   value: timesPerDay,
+//                                   items: List.generate(
+//                                       10,
+//                                       (index) => DropdownMenuItem(
+//                                             value: index + 1,
+//                                             child: Text('${index + 1} times'),
+//                                           )),
+//                                   onChanged: (value) {
+//                                     setState(() => timesPerDay = value!);
+//                                   },
+//                                 ),
+//                               ],
+//                             )
+//                           : null,
+//                     ),
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -18,9 +80,7 @@ class SetInstructionsScaffold extends StatefulWidget {
 }
 
 class _SetInstructionsScaffoldState extends State<SetInstructionsScaffold> {
-
-bool isLoading = true;
-
+  bool isLoading = true;
   bool intervalEnabled = false;
   bool timesPerDayEnabled = false;
   bool daysOfWeekEnabled = false;
@@ -35,6 +95,8 @@ bool isLoading = true;
   int quantity = 2;
   int turnOffWeeks = 2;
   String additionalInstructions = '';
+  late TextEditingController additionalInstructionsController;
+
   Map<String, bool> selectedDays = {
     'Monday': false,
     'Tuesday': false,
@@ -49,6 +111,19 @@ bool isLoading = true;
   void initState() {
     super.initState();
     _initializeFields();
+    additionalInstructionsController =
+        TextEditingController(text: additionalInstructions);
+    additionalInstructionsController.addListener(() {
+      setState(() {
+        additionalInstructions = additionalInstructionsController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    additionalInstructionsController.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeFields() async {
@@ -66,10 +141,8 @@ bool isLoading = true;
         intervalHours = intervalEnabled
             ? int.tryParse(instructions['Interval'].split(' ')[0]) ?? 6
             : 6;
-
         timesPerDayEnabled = instructions['Times_per_day'] != null;
         timesPerDay = timesPerDayEnabled ? instructions['Times_per_day'] : 3;
-
         daysOfWeekEnabled = instructions.keys.any((day) =>
             day == 'Monday' ||
             day == 'Tuesday' ||
@@ -83,26 +156,22 @@ bool isLoading = true;
             selectedDays[day] = instructions[day] ?? false;
           });
         }
-
         mealTimingEnabled = instructions['Before_meal'] != null ||
             instructions['After_meal'] != null;
         beforeMeal = instructions['Before_meal'] ?? false;
         afterMeal = instructions['After_meal'] ?? false;
-
         quantityEnabled = instructions['Quantity'] != null;
         quantity = quantityEnabled
             ? int.tryParse(instructions['Quantity'].split(' ')[0]) ?? 2
             : 2;
-
         turnOffEnabled = instructions['Turn_off_after'] != null;
         turnOffWeeks = turnOffEnabled
             ? int.tryParse(instructions['Turn_off_after'].split(' ')[0]) ?? 2
             : 2;
-
         additionalInstructions = instructions['Notes'] ?? '';
         isLoading = false;
       });
-    }else{
+    } else {
       setState(() {
         isLoading = false;
       });
@@ -192,14 +261,19 @@ bool isLoading = true;
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: isLoading ? const Center(child: CircularProgressIndicator(),): SingleChildScrollView(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
                 child: Column(
                   children: [
                     buildToggleField(
                       'Interval',
                       enabled: intervalEnabled,
                       onChanged: (value) {
-                        setState(() => intervalEnabled = value);
+                        setState(() {
+                          intervalEnabled = value;
+                          if (intervalEnabled) timesPerDayEnabled = false;
+                        });
                       },
                       child: intervalEnabled
                           ? Row(
@@ -224,7 +298,10 @@ bool isLoading = true;
                       'Times per Day',
                       enabled: timesPerDayEnabled,
                       onChanged: (value) {
-                        setState(() => timesPerDayEnabled = value);
+                        setState(() {
+                          timesPerDayEnabled = value;
+                          if (timesPerDayEnabled) intervalEnabled = false;
+                        });
                       },
                       child: timesPerDayEnabled
                           ? Row(
@@ -314,67 +391,54 @@ bool isLoading = true;
                           : null,
                     ),
                     buildToggleField(
-                      'Quantity',
+                      'Select Quantity',
                       enabled: quantityEnabled,
                       onChanged: (value) {
                         setState(() => quantityEnabled = value);
                       },
                       child: quantityEnabled
-                          ? Row(
-                              children: [
-                                DropdownButton<int>(
-                                  value: quantity,
-                                  items: List.generate(
-                                      10,
-                                      (index) => DropdownMenuItem(
-                                            value: index + 1,
-                                            child: Text('${index + 1} pills'),
-                                          )),
-                                  onChanged: (value) {
-                                    setState(() => quantity = value!);
-                                  },
-                                ),
-                              ],
+                          ? DropdownButton<int>(
+                              value: quantity,
+                              items: List.generate(
+                                  10,
+                                  (index) => DropdownMenuItem(
+                                        value: index + 1,
+                                        child: Text('${index + 1} pills'),
+                                      )),
+                              onChanged: (value) {
+                                setState(() => quantity = value!);
+                              },
                             )
                           : null,
                     ),
                     buildToggleField(
-                      'Turn off after',
+                      'Turn Off Medication After',
                       enabled: turnOffEnabled,
                       onChanged: (value) {
                         setState(() => turnOffEnabled = value);
                       },
                       child: turnOffEnabled
-                          ? Row(
-                              children: [
-                                DropdownButton<int>(
-                                  value: turnOffWeeks,
-                                  items: List.generate(
-                                      10,
-                                      (index) => DropdownMenuItem(
-                                            value: index + 1,
-                                            child: Text('${index + 1} weeks'),
-                                          )),
-                                  onChanged: (value) {
-                                    setState(() => turnOffWeeks = value!);
-                                  },
-                                ),
-                              ],
+                          ? DropdownButton<int>(
+                              value: turnOffWeeks,
+                              items: List.generate(
+                                  10,
+                                  (index) => DropdownMenuItem(
+                                        value: index + 1,
+                                        child: Text('${index + 1} weeks'),
+                                      )),
+                              onChanged: (value) {
+                                setState(() => turnOffWeeks = value!);
+                              },
                             )
                           : null,
                     ),
-                    const SizedBox(height: 10),
                     TextField(
                       decoration: const InputDecoration(
                         labelText: 'Additional Instructions',
                         border: OutlineInputBorder(),
                       ),
                       maxLines: 3,
-                      onChanged: (value) {
-                        setState(() => additionalInstructions = value);
-                      },
-                      controller:
-                          TextEditingController(text: additionalInstructions),
+                      controller: additionalInstructionsController,
                     ),
                     const SizedBox(height: 20),
                     Center(
@@ -393,20 +457,19 @@ bool isLoading = true;
                   ],
                 ),
               ),
-      
       ),
     );
   }
 
-  Widget buildToggleField(String title,
+  Widget buildToggleField(String label,
       {required bool enabled,
       required ValueChanged<bool> onChanged,
       Widget? child}) {
-    return Column(
+    return  Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SwitchListTile(
-          title: Text(title),
+          title: Text(label),
           value: enabled,
           onChanged: onChanged,
         ),

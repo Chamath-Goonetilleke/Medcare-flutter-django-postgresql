@@ -13,5 +13,6 @@ urlpatterns = [
     path('api/', include('prescription.urls')),
     path('api/', include('medicine.urls')),
     path('api/', include('keywords.urls')),
-    path('api/', include('pharmacy.urls'))
+    path('api/', include('pharmacy.urls')),
+    path('api/', include('reminder.urls'))
 ]
