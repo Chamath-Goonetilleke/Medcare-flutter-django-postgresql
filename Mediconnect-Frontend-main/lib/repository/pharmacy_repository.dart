@@ -1,19 +1,20 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
-class ReminderRepository {
-
-   Future<dynamic> createReminder({required String reminder}) async {
+class PharmacyRepository {
+  Future<dynamic> updatePharmacy(
+      {required String pharmacy, required int pharmacyId}) async {
     try {
-      var response = await http.post(
-        Uri.parse("http://10.0.2.2:8000/api/reminder/create"),
+      var response = await http.put(
+        Uri.parse("http://10.0.2.2:8000/api/pharmacy/update/$pharmacyId/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },
-        body: reminder,
+        body: pharmacy,
       );
 
-      print(response.body); // Print to see if there's a specific error message
+      print(response.body);
       if (response.statusCode == 201 || response.statusCode == 200) {
         return jsonDecode(response.body); // Successful response
       } else {
@@ -25,4 +26,3 @@ class ReminderRepository {
     }
   }
 }
-

@@ -72,6 +72,7 @@ class _PrescriptionsScaffoldState extends State<PrescriptionsScaffold> {
               if (prescription['IsHide'] == false) {
                 setState(() {
                   myPrescriptions.add({
+                    'id': prescription['Prescription_ID'],
                     'date': stringDate,
                     'doctor':
                         "Dr. ${prescription['Doctor_ID']['First_name']} ${prescription['Doctor_ID']['Last_name']} (${prescription['Doctor_ID']['Specialization']})",

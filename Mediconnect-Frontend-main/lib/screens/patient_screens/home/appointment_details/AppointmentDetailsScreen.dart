@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mediconnect/repository/appointment_repository.dart';
+import 'package:mediconnect/screens/patient_screens/home/home_page/HomePage.dart';
 
 import '../../../../themes/appointmentStatusColors.dart';
 import '../rate/RateScreen.dart';
 
-class AppointmentDetailsScreen extends StatelessWidget {
+class AppointmentDetailsScreen extends StatefulWidget {
   final String appointmentName;
   final String doctorName;
   final String specialty;
@@ -15,6 +17,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
   final int currentNumber;
   final String turnTime;
   final String appointmentStatus;
+  final Map<String, dynamic> appointment;
 
   const AppointmentDetailsScreen({
     super.key,
@@ -27,14 +30,20 @@ class AppointmentDetailsScreen extends StatelessWidget {
     required this.appointmentNumber,
     required this.currentNumber,
     required this.turnTime,
-    required this.appointmentStatus,
+    required this.appointmentStatus, required this.appointment,
   });
 
+  @override
+  State<AppointmentDetailsScreen> createState() => _AppointmentDetailsScreenState();
+}
+
+class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   String formatDate(String dateString) {
     DateTime dateTime = DateTime.parse(dateString.split('.').first);
 
     return DateFormat('yyyy-MM-dd').format(dateTime);
   }
+  final AppointmentRepository _appointmentRepository = AppointmentRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -50,37 +59,37 @@ class AppointmentDetailsScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.person, size: 40),
               title: Text(
-                "$doctorName - $appointmentName",
+                "${widget.doctorName} - ${widget.appointmentName}",
                 style:
                 const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-              subtitle: Text("$doctorName($specialty)"),
+              subtitle: Text("${widget.doctorName}(${widget.specialty})"),
             ),
             const Divider(height: 30),
             ListTile(
               leading: const Icon(Icons.calendar_today, size: 40),
               title: Text(
-                formatDate(appointmentDate),
+                formatDate(widget.appointmentDate),
                 style: const TextStyle(fontSize: 18),
               ),
-              subtitle: Text(appointmentTime),
+              subtitle: Text(widget.appointmentTime),
             ),
             ListTile(
               leading: const Icon(Icons.location_on, size: 40),
-              title: Text(location),
+              title: Text(widget.location),
             ),
             const SizedBox(height: 20),
             Text(
-              "My number: $appointmentNumber",
+              "My number: ${widget.appointmentNumber}",
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
-              "Current attending number: $currentNumber",
+              "Current attending number: ${widget.currentNumber}",
               style: const TextStyle(fontSize: 18),
             ),
             Text(
-              "My turn at (approx.): $turnTime",
+              "My turn at (approx.): ${widget.turnTime}",
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 20),
@@ -88,10 +97,10 @@ class AppointmentDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 10),
               width: double.infinity,
               color: getAppointmentStatusColor(
-                  appointmentStatus), // Use the status color method
+                  widget.appointmentStatus), // Use the status color method
               child: Center(
                 child: Text(
-                  "Appointment Status: $appointmentStatus",
+                  "Appointment Status: ${widget.appointmentStatus}",
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -125,8 +134,20 @@ class AppointmentDetailsScreen extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    // Handle remove appointment action
+                  onPressed: ()async{
+                   final response = await _appointmentRepository
+                        .deleteAppointment(apId: widget.appointment['Appointment_ID']);
+                    if (response['status'] == "success") {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Appointment Deleted Successfully '),
+                      ));
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => HomePage()));
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Appointment Deleting Fail '),
+                      ));
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,

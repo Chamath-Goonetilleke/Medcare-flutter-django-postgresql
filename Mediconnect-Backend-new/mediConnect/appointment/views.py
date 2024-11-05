@@ -73,6 +73,6 @@ def delete_appointment(request, pk):
         appointment = Appointment.objects.get(Appointment_ID=pk)
         appointment.delete()
         return Response({"status": "success", "message": "Appointment deleted successfully"},
-                        status=status.HTTP_204_NO_CONTENT)
+                        status=status.HTTP_200_OK)
     except Appointment.DoesNotExist:
         return Response({"status": "error", "message": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)

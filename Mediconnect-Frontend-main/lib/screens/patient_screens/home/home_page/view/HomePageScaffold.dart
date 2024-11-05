@@ -130,6 +130,7 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
                                   currentNumber: appointment['Queue_ID']['Current_Number'],
                                   turnTime: appointment['Approx_Time'],
                                   appointmentStatus: appointment['Status'],
+                                  appointment: appointment,
                                 ),
                               ),
                             );

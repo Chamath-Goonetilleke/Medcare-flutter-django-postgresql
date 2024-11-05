@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mediconnect/models/MedicineReminder.dart';
+import 'package:mediconnect/repository/pharmacy_repository.dart';
 import 'package:mediconnect/repository/reminder_repository.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,51 +17,13 @@ class ReminderScreen extends StatefulWidget {
 
 class _ReminderScreenState extends State<ReminderScreen> {
   bool isLoading = true;
-  final ReminderRepository apiService = ReminderRepository();
   late Future<List<MedicineReminder>> reminders;
-  final List<MedicineReminder> sampleReminders = [
-    MedicineReminder(
-      medicineId: 1,
-      medicine: "Panadol",
-      strength: "5mg",
-      interval: "6 hours",
-      timesPerDay: null,
-      beforeMeal: true,
-      afterMeal: false,
-      quantity: "2 pills",
-      turnOffAfter: "8 weeks",
-      notes: "Take with water",
-    ),
-    MedicineReminder(
-      medicineId: 2,
-      medicine: "Digene",
-      strength: "5mg",
-      interval: null,
-      timesPerDay: 4,
-      beforeMeal: true,
-      afterMeal: false,
-      quantity: "1 pill",
-      turnOffAfter: "4 weeks",
-      notes: "Avoid acidic food",
-    ),
-    MedicineReminder(
-      medicineId: 3,
-      medicine: "Pantodac",
-      strength: "15mg",
-      interval: "8 hours",
-      timesPerDay: null,
-      beforeMeal: false,
-      afterMeal: true,
-      quantity: "1 pill",
-      turnOffAfter: "6 weeks",
-      notes: "Do not crush the pill",
-    ),
-  ];
+  final List<MedicineReminder> sampleReminders = [];
 
   void getMedicineIds() async {
     List<MedicineReminder> results =
         []; // Step 1: Initialize an empty list to store results
-
+        print(widget.prescription);
     List<Future<void>> requests =
         widget.prescription['medications'].map<Future<void>>((med) async {
       final uri = Uri.parse("http://10.0.2.2:8000/api/pharmacy/${med['id']}");
@@ -100,7 +63,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
   @override
   void initState() {
     super.initState();
-    //reminders = apiService.fetchReminders();
+    //reminders = _reminderRepository.fetchReminders();
     //reminders = Future.value(sampleReminders);
     getMedicineIds();
   }
@@ -143,7 +106,8 @@ class ReminderCard extends StatefulWidget {
 }
 
 class _ReminderCardState extends State<ReminderCard> {
-  final ReminderRepository apiService = ReminderRepository();
+  final ReminderRepository _reminderRepository = ReminderRepository();
+  final PharmacyRepository _pharmacyRepository = PharmacyRepository();
   late List<TimeOfDay?> selectedTimes;
 
   @override
@@ -180,15 +144,15 @@ class _ReminderCardState extends State<ReminderCard> {
       List<Map<String, dynamic>>  reminders=[];
       if(widget.reminder.interval != null) { 
        reminders.add({
-        "medicineID":widget.reminder.medicineId,
-        "time": widget.reminder.startTime.toString(),
+        "Medicine_ID":widget.reminder.medicineId,
+        "time":"${widget.reminder.startTime!.hour.toString().padLeft(2, '0')}.${widget.reminder.startTime!.minute.toString().padLeft(2, '0')}",
         "quantity":widget.reminder.quantity,
         "after_meal":widget.reminder.afterMeal,
         "before_meal":widget.reminder.beforeMeal
        });
        reminders.add({
-          "medicineID": widget.reminder.medicineId,
-          "time": widget.reminder.endTime.toString(),
+          "Medicine_ID": widget.reminder.medicineId,
+          "time": "${widget.reminder.endTime!.hour.toString().padLeft(2, '0')}.${widget.reminder.endTime!.minute.toString().padLeft(2, '0')}",
           "quantity": widget.reminder.quantity,
           "after_meal": widget.reminder.afterMeal,
           "before_meal": widget.reminder.beforeMeal
@@ -198,8 +162,8 @@ class _ReminderCardState extends State<ReminderCard> {
         
         for (var selectedTime in selectedTimes) {
           reminders.add({
-            "medicineID": widget.reminder.medicineId,
-            "time": selectedTime,
+            "Medicine_ID": widget.reminder.medicineId,
+            "time": "${selectedTime!.hour.toString().padLeft(2, '0')}.${selectedTime.minute.toString().padLeft(2, '0')}",
             "quantity": widget.reminder.quantity,
             "after_meal": widget.reminder.afterMeal,
             "before_meal": widget.reminder.beforeMeal
@@ -208,8 +172,15 @@ class _ReminderCardState extends State<ReminderCard> {
 
       }
       print(reminders);
-      // await apiService.saveReminder(widget.reminder);
-      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Reminder saved successfully')));
+      final response = await _reminderRepository.createReminder(reminder: jsonEncode(reminders));
+      if(response['status'] =="success"){
+        final res = await _pharmacyRepository.updatePharmacy(pharmacy: jsonEncode({"IsReminderSet": true}), pharmacyId: widget.reminder.medicineId);
+        if(res['status'] =="success"){
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Reminder Saved Successfully')));
+        }
+        
+      }
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Failed to save reminder: $e')));

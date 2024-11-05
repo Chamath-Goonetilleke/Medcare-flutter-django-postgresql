@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from .models import Reminder
-from .serializers import PharmacySerializer, ReminderSerializer, ReminderAddSerializer
+from .serializers import ReminderSerializer, ReminderAddSerializer
 
 
 # Reminder views
@@ -15,11 +15,13 @@ def create_reminder(request):
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
     return Response({"status": "error", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET'])
-def get_daily_reminders(request):
-    reminders = Reminder.objects.all()  # Fetch active reminders
+def get_daily_reminders(request, med_id):
+    reminders = Reminder.objects.filter(Medicine_ID=med_id)
     serializer = ReminderSerializer(reminders, many=True)
     return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def mark_reminder_completed(request, pk):

@@ -42,7 +42,7 @@ def update_pharmacy(request, pk):
     except Pharmacy.DoesNotExist:
         return Response({"status": "error", "message": "Pharmacy record not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = PharmacySerializer(instance=pharmacy, data=request.data, partial=True)
+    serializer = PharmacyAddSerializer(instance=pharmacy, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
