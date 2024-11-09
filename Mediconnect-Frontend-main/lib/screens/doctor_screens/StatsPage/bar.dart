@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mediconnect/screens/doctor_screens/StatsPage/widgets/appointmenttable.dart';
 import 'package:mediconnect/screens/doctor_screens/StatsPage/widgets/rating.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
-class Barchart extends StatelessWidget {
+class Barchart extends StatefulWidget {
   const Barchart({super.key});
 
   ///////////////////////////////////////////////////////  this part shows booked Appointment ////////////////////////////////////////////////////
@@ -37,59 +40,72 @@ class Barchart extends StatelessWidget {
   }
 
   @override
+  State<Barchart> createState() => _BarchartState();
+}
+
+class _BarchartState extends State<Barchart> {
+  Map<String, dynamic>? doctor;
+  bool isLoading = true;
+
+  Future<void> getDoctorDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_id');
+
+    final uri =
+        Uri.parse("http://10.0.2.2:8000/api/doctors/getByUserId/$userId");
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+    final data = jsonDecode(response.body);
+    if (data['status'] == "success") {
+      setState(() {
+        doctor = data['data'];
+        isLoading = false;
+      });
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    getDoctorDetails();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "STATS",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
         ),
+        automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(2),
-        child: Column(
-          children: [
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Appointments Summary",
-                style: TextStyle(fontWeight: FontWeight.bold),
+      
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(2),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  const Text("No of Patients Treat",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                  Text("${doctor!['Patient_Count']}",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 19)),
+                  const SizedBox(height: 40),
+                  Center(
+                      child: const Text("Rate",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20))),
+                  Rating(doctor!['Rating']),
+                ],
               ),
             ),
-            SizedBox(
-              height: 300,
-              child: BarChart(
-                BarChartData(
-                  barGroups: createSampleAppointmentData(),
-                  titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (double value, TitleMeta meta) {
-                          const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                          return Text(days[value.toInt()]);
-                        },
-                      ),
-                    ),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  gridData: FlGridData(show: false),
-                  barTouchData: BarTouchData(enabled: true),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text("Appointment Detail", style: TextStyle(fontWeight: FontWeight.bold)),
-            const Appointment_Table(),
-            const SizedBox(height: 20),
-            const Text("Rate", style: TextStyle(fontWeight: FontWeight.bold)),
-            Rating(4.5),
-          ],
-        ),
-      ),
     );
   }
 }

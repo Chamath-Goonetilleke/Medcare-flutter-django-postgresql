@@ -24,6 +24,8 @@ class Doctor(models.Model):
     Reg_num = models.CharField()
     Specialization = models.CharField(max_length=255)
     Rating = models.FloatField(default=0.0)
+    Patient_Count = models.BigIntegerField(default=0)
+    Rating_Count = models.BigIntegerField(default=0)
     Current_HOS_ID = models.ForeignKey(Hospital, on_delete=models.CASCADE, null=True)
     Availability = models.BooleanField(default=True)
     ID_photo = models.BigIntegerField(null=True)

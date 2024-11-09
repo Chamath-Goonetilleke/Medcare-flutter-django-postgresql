@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from .models import User
 from .serializers import UserSerializer
 from rest_framework.response import Response
@@ -72,6 +74,27 @@ def get_user_by_id(request, pk):
     except User.DoesNotExist:
         return Response({"status": "error", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET'])
+def get_user_by_device_id(request, device_id):
+    try:
+        user = User.objects.get(Device_ID=device_id, IsCurrent=True, IsRegistered=True)
+        serializer = UserSerializer(user, many=False)
+        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"status": "error", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def get_all_user_by_device_id(request, device_id):
+    try:
+        users = User.objects.filter(Device_ID=device_id, IsRegistered=True)  # Use filter to get all matching users
+        if not users.exists():
+            return Response({"status": "error", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserSerializer(users, many=True)  # Set many=True for multiple users
+        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['PUT'])
 def update_user_registration_status(request, pk):
@@ -89,6 +112,33 @@ def update_user_registration_status(request, pk):
     return Response(
         {"status": "success", "data": serializer.data, "message": "User registration status updated to True"},
         status=status.HTTP_200_OK)
+
+
+@api_view(['PUT'])
+def update_user_current_status(request, pk):
+    try:
+        with transaction.atomic():
+            # Retrieve the user by their User_ID (pk)
+            user = User.objects.get(User_ID=pk)
+            user.set_as_current_user()
+
+            serializer = UserSerializer(user)
+            return Response(
+                {
+                    "status": "success",
+                    "data": serializer.data,
+                    "message": "User set as current user for this device"
+                },
+                status=status.HTTP_200_OK
+            )
+    except User.DoesNotExist:
+        return Response(
+            {
+                "status": "error",
+                "message": "User not found"
+            },
+            status=status.HTTP_404_NOT_FOUND
+        )
 
 @api_view(['PUT'])
 def update_user_role(request, pk):

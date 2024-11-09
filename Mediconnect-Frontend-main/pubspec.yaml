@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   is_first_run: ^1.0.0
   qr_flutter: ^4.1.0
+  qr_code_scanner: ^1.0.1
   http: ^1.2.2
   google_sign_in: ^6.2.1
   flutter_facebook_auth: ^7.0.1
@@ -71,7 +72,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-     - assets/images/image.png
+     - assets/images/
      - assets/images/mediconnect.png
      - assets/logos/flogo-HexRBG-Wht-100.png
      - assets/logos/google-logo.png

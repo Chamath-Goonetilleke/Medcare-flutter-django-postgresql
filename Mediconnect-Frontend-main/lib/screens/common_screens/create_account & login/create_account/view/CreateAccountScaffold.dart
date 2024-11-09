@@ -31,18 +31,10 @@ class _CreateAccountScaffoldState extends State<CreateAccountScaffold> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? deviceId = prefs.getString('device_id');
 
-    if (deviceId == null) {
-      // Generate a random unique ID (you can use any approach here)
-      deviceId = _generateRandomId();
-      await prefs.setString('device_id', deviceId);
-    }
-
+    setState(() {
     _deviceId = deviceId;
-  }
-
-  String _generateRandomId() {
-    var random = Random();
-    return List.generate(16, (index) => random.nextInt(9).toString()).join();
+      
+    });
   }
 
 void _showErrorDialog(BuildContext context, String message) {

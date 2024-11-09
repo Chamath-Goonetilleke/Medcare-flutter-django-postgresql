@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../widgets/widgets.dart';  // Import the widgets
+import 'package:mediconnect/screens/common_screens/create_account%20&%20login/login/LoginScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/widgets.dart'; // Import the widgets
 
 class SwitchUserDialog extends StatefulWidget {
   const SwitchUserDialog({super.key});
@@ -13,6 +15,7 @@ class SwitchUserDialog extends StatefulWidget {
 class _SwitchUserDialogState extends State<SwitchUserDialog> {
   List<dynamic> users = [];
   bool isLoading = true;
+  String? _userId;
 
   @override
   void initState() {
@@ -21,13 +24,20 @@ class _SwitchUserDialogState extends State<SwitchUserDialog> {
   }
 
   Future<void> fetchUsers() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? deviceId = prefs.getString('device_id');
+    String? userId = prefs.getString('user_id');
     try {
-      final response = await http.get(Uri.parse('https://yourbackendapi.com/api/logged_in_users'));  // Update with your actual API endpoint
+      final response = await http.get(Uri.parse(
+          'http://10.0.2.2:8000/api/users/all-device-users/$deviceId/')); // Update with your actual API endpoint
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print(data['data']);
         setState(() {
-          users = data['users'];  // Assume 'users' is a list of user objects returned from the backend
+          _userId = userId;
+          users = data[
+              'data']; // Assume 'users' is a list of user objects returned from the backend
           isLoading = false;
         });
       } else {
@@ -50,15 +60,25 @@ class _SwitchUserDialogState extends State<SwitchUserDialog> {
           : SingleChildScrollView(
               child: ListBody(
                 children: users.map((user) {
-                  return UserListTile(
-                    name: user['name'],
-                    email: user['email'],
-                    role: user['role'],
-                    onTap: () {
-                      // Handle switching to this account
-                      Navigator.of(context).pop();  // Close dialog after switching
-                    },
-                  );
+                  if (user['User_ID'].toString() != _userId) {
+                    print("user $_userId User_ID: " + user['User_ID'].toString());
+                    return UserListTile(
+                      name: user['Device_ID'],
+                      email: user['Email'],
+                      role: user['Role'],
+                      onTap: () {
+                        // Handle switching to this account
+                               Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const LoginScreen()),
+                            );
+                      },
+                    );
+                  } else {
+                    return const SizedBox();
+                  }
                 }).toList(),
               ),
             ),

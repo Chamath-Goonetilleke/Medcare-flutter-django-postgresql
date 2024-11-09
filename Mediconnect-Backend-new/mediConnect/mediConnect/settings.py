@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'keywords',
     'pharmacy',
     'reminder',
+    'notification',
+    'task',
     'rest_framework'
 
 ]

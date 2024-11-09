@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mediconnect/repository/doctor_repository.dart';
+import 'package:mediconnect/screens/common_screens/switch_user/switchUser.dart';
 import 'package:mediconnect/screens/doctor_screens/NextPatientpage/nextpatientpage.dart';
 import 'package:mediconnect/screens/doctor_screens/homepage/addtodaysplanbutton.dart';
 import 'package:mediconnect/screens/doctor_screens/homepage/nextpatent.dart';
@@ -14,6 +15,7 @@ import 'numofpatient.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -24,8 +26,101 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final String _currentLocation = "maharagama";
-// This widget displays the number of patients.
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? controller;
+  String? qrData; 
+  bool isScanning = false;
+  bool isLoading = true;
+
+  // Add this method to handle QR code scanning
+  void _onQRViewCreated(QRViewController controller) {
+    this.controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      setState(() {
+        qrData = scanData.code;
+        isScanning = false; // Hide scanner after successful scan
+        controller.pauseCamera();
+      });
+      // Show success dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('QR Code Scanned'),
+            content: Text('Scanned Data: $qrData'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    });
+  }
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
+  void _showQRScanner() {
+    setState(() {
+      isScanning = true;
+    });
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            const Text(
+              'Scan QR Code',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: QRView(
+                key: qrKey,
+                onQRViewCreated: _onQRViewCreated,
+                overlay: QrScannerOverlayShape(
+                  borderColor: Colors.blue,
+                  borderRadius: 10,
+                  borderLength: 30,
+                  borderWidth: 10,
+                  cutOutSize: 300,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  isScanning = false;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget numofpatient(int? queueLength) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -54,6 +149,8 @@ class _HomeState extends State<Home> {
     super.initState();
     getDoctorDetails();
   }
+
+
 
   Future<void> getDoctorDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -107,7 +204,8 @@ class _HomeState extends State<Home> {
         body: jsonEncode({
           "Doctor_ID": doctor!['Doctor_ID'],
           "Hospital_ID": selectedMedicalCenterId,
-          "Date": '2024-11-04'
+          //"Date": '2024-11-05'
+          "Date":  DateFormat('yyyy-MM-dd').format(DateTime.now()).toString()
         }));
     final data = jsonDecode(response.body);
 
@@ -123,12 +221,15 @@ class _HomeState extends State<Home> {
       if (queueData['status'] == "success") {
         setState(() {
           queueLength = int.parse(queueData['queue_length'].toString());
+          isLoading = false;
         });
+
       }
     } else {
       setState(() {
         isQueueAvailable = false;
         queueLength = 0;
+        isLoading = false;
       });
     }
   }
@@ -140,170 +241,204 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: const Text(
           "Home",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.switch_account),
+            onPressed: () {
+              switchUser(context);
+            },
+          ),
+        ],
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 0, left: 16.0, right: 18.0),
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Hello\nDr. ${doctor?['First_name'] ?? ''} ${doctor?['Last_name'] ?? ''}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 30, height: 1),
-              ),
-            ),
-            Row(
-              children: [
-                elevationbutton("Overview"),
-                const SizedBox(width: 6.0),
-                elevationbutton("Productivity"),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.only(top: 10, left: 30, right: 0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Column(
-                  children: [
-                    Row(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(top: 0, left: 16.0, right: 18.0),
+              child: isLoading ? const Center(child: CircularProgressIndicator(),): Column(
                       children: [
-                        const Text(
-                          "I'm now in ",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Hello\nDr. ${doctor?['First_name'] ?? ''} ${doctor?['Last_name'] ?? ''}",
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 30,
+                                height: 1),
+                          ),
                         ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: FutureBuilder<void>(
-                            future: fetchHospitalsAndQueue(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Text("Getting Current Hospital...");
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: DropdownButtonFormField<String>(
-                                  items: hospitals.map((center) {
-                                    return DropdownMenuItem<String>(
-                                      value: center['Hospital_ID'].toString(),
-                                      child: Text(
-                                          '${center['Name']} - ${center['Location']}', style: TextStyle(fontSize: 13),),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? value) async {
-                                    String? name;
-                                    for (var hospital in hospitals) {
-                                      if (hospital['Hospital_ID'].toString() ==
-                                          value) {
-                                        name =
-                                            "${hospital['Name']} - ${hospital['Location']}";
-                                      }
-                                    }
-                                    setState(() {
-                                      selectedMedicalCenterId = value;
-                                      selectedHospitalName = name;
-                                    });
+                        Row(
+                          children: [
+                            elevationbutton("Overview"),
+                            const SizedBox(width: 6.0),
+                            elevationbutton("Productivity"),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.only(
+                              top: 10, left: 30, right: 0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 5,
+                                blurRadius: 7,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "I'm now in ",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: FutureBuilder<void>(
+                                        future: fetchHospitalsAndQueue(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const Text(
+                                                "Getting Current Hospital...");
+                                          }
+                                          return Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              items: hospitals.map((center) {
+                                                return DropdownMenuItem<String>(
+                                                  value: center['Hospital_ID']
+                                                      .toString(),
+                                                  child: Text(
+                                                    '${center['Name']} - ${center['Location']}',
+                                                    style:
+                                                        TextStyle(fontSize: 13),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                              onChanged: (String? value) async {
+                                                String? name;
+                                                for (var hospital
+                                                    in hospitals) {
+                                                  if (hospital['Hospital_ID']
+                                                          .toString() ==
+                                                      value) {
+                                                    name =
+                                                        "${hospital['Name']} - ${hospital['Location']}";
+                                                  }
+                                                }
+                                                setState(() {
+                                                  selectedMedicalCenterId =
+                                                      value;
+                                                  selectedHospitalName = name;
+                                                  isLoading = true;
+                                                });
 
-                                    final res =
-                                        await doctorRepository.updateDoctor(
-                                            currentHos: int.parse(value!),
-                                            docId: doctor!['Doctor_ID']);
-                                    if (res['status'] == "success") {
-                                      await getQueue();
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Current Hospital Changed')),
-                                      );
-                                    }
-                                  },
-                                  value: selectedMedicalCenterId,
+                                                final res =
+                                                    await doctorRepository
+                                                        .updateDoctor(
+                                                            currentHos:
+                                                                int.parse(
+                                                                    value!),
+                                                            docId: doctor![
+                                                                'Doctor_ID']);
+                                                if (res['status'] ==
+                                                    "success") {
+                                                  await getQueue();
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                        content: Text(
+                                                            'Current Hospital Changed')),
+                                                  );
+                                                }
+                                              },
+                                              value: selectedMedicalCenterId,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        available(),
+                        const SizedBox(height: 10),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      NextPatient(queueId: queueId!)),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(100, 25),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 80, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            backgroundColor: Colors.lightBlue.shade100,
+                          ),
+                          child: const Text(
+                            "Next Patient",
+                            style: TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        SizedBox(
+                          child: numofpatient(queueLength),
+                        ),
+                        const SizedBox(height: 0),
+                        line(Colors.black, 400.0, 8.0),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _showQRScanner,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(100, 25),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 80, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            backgroundColor: Colors.lightBlue.shade100,
+                          ),
+                          child: const Text(
+                            "Scan QR Code",
+                            style: TextStyle(fontSize: 16, color: Colors.black),
                           ),
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        const SizedBox(width: 150),
-                        confrim(_currentLocation),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            
             ),
-            const SizedBox(height: 10),
-            available(),
-            const SizedBox(height: 10),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => NextPatient(queueId: queueId!)),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(100, 25),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 80, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                backgroundColor: Colors.lightBlue.shade100,
-              ),
-              child: const Text(
-                "Next Patient",
-                style: TextStyle(fontSize: 16, color: Colors.black),
-              ),
-            ),
-            const SizedBox(height: 5),
-            SizedBox(
-              child: numofpatient(queueLength),
-            ),
-            const SizedBox(height: 0),
-            line(Colors.black, 400.0, 8.0),
-            const SizedBox(
-              height: 5,
-            ),
-            const Align(
-              alignment: Alignment.centerLeft, // Aligns to the left
-              child: Text(
-                "Today's Plan",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-            const TodayTaskContainer(confirmButtonStatus: false),
-            const AddTodaysTask(),
-          ],
-        ),
-     
+          ),
+        ],
       ),
     );
   }

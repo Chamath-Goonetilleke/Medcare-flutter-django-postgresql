@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:mediconnect/repository/user_repository.dart';
@@ -54,7 +55,7 @@ class _LoginScaffoldState extends State<LoginScaffold> {
       body: Stack(
         children: [
           const BackgroundImage(), // Use the background image
-          Padding(
+          Expanded(child: Padding(
             padding: const EdgeInsets.all(30.0),
             child: Column(
               children: [
@@ -121,27 +122,53 @@ class _LoginScaffoldState extends State<LoginScaffold> {
                                   "Password": _passwordController.text
                                 }));
                                 if (response['status'] == "success") {
-                                  setUserID(response['data']['User_ID'].toString());
+                                  setUserID(
+                                      response['data']['User_ID'].toString());
                                   if (response['data']['IsRegistered']) {
-                                    if(response['data']['Role'] == "Patient"){
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => HomePage()),
-                                      );
-                                    }
-                                    else if (response['data']['Role'] == "Doctor") {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => const DoctorHomeScreen()),
-                                      );
-                                    }
-                                    else{
+                                    if (response['data']['Role'] == "Patient") {
+                                      final usRes = await http.put(
+                                          Uri.parse(
+                                              'http://10.0.2.2:8000/api/users/currentUser/${response['data']['User_ID']}/'),
+                                          headers: <String, String>{
+                                            'Content-Type':
+                                                'application/json; charset=UTF-8'
+                                          },
+                                          body: jsonEncode(<String, String>{
+                                            "Role": "role"
+                                          }));
+                                      final usData = jsonDecode(usRes.body);
+                                      if (usData['status'] == "success") {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => HomePage()),
+                                        );
+                                      }
+                                    } else if (response['data']['Role'] ==
+                                        "Doctor") {
+                                      final usRes = await http.put(
+                                          Uri.parse(
+                                              'http://10.0.2.2:8000/api/users/currentUser/${response['data']['User_ID']}/'),
+                                          headers: <String, String>{
+                                            'Content-Type':
+                                                'application/json; charset=UTF-8'
+                                          },
+                                          body: jsonEncode(<String, String>{
+                                            "Role": "role"
+                                          }));
+                                      final usData = jsonDecode(usRes.body);
+                                      if (usData['status'] == "success") {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const DoctorHomeScreen()),
+                                        );
+                                      }
+                                    } else {
                                       _showErrorDialog(
                                           context, "Role is not set");
                                     }
-
                                   } else {
                                     Navigator.push(
                                       context,
@@ -203,8 +230,10 @@ class _LoginScaffoldState extends State<LoginScaffold> {
               ],
             ),
           ),
+        )
         ],
       ),
+    
     );
   }
 }

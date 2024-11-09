@@ -112,27 +112,28 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RateScreen(
-                          doctorName: 'Dr. John Doe',
+                widget.appointment['Is_Rate'] ?  const SizedBox(): ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RateScreen(
+                                doctorName: 'Dr. John Doe',
+                                appointment: widget.appointment,
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 10),
+                        ),
+                        child: const Text(
+                          "Rate",
+                          style: TextStyle(fontSize: 18),
                         ),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 10),
-                  ),
-                  child: const Text(
-                    "Rate",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
                 ElevatedButton(
                   onPressed: ()async{
                    final response = await _appointmentRepository

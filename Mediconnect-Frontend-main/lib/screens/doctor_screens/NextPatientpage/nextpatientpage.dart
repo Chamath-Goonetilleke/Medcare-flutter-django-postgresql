@@ -1,3 +1,5 @@
+import 'package:mediconnect/repository/doctor_repository.dart';
+import 'package:mediconnect/repository/notification_repository.dart';
 import 'package:mediconnect/screens/doctor_screens/NextPatientpage/procedtoprescription.dart';
 import 'package:mediconnect/screens/doctor_screens/PrescriptionsReport/Prescription.dart';
 import 'package:mediconnect/screens/doctor_screens/homepage/line.dart';
@@ -21,6 +23,11 @@ class _NextPatientState extends State<NextPatient> {
   bool isLoading = true;
   Map<String, dynamic>? presDetails;
   Map<String, dynamic>? patientData;
+  Map<String, dynamic>? appointmentData;
+
+  final NotificationRepository _notificationRepository =
+      NotificationRepository();
+  final DoctorRepository _doctorRepository = DoctorRepository();
 
   int calculateAge(String birthdate) {
     List<String> dateParts = birthdate.split('/');
@@ -51,8 +58,10 @@ class _NextPatientState extends State<NextPatient> {
       setState(() {
         isLoading = false;
         if (queueData['data'].length > 0) {
+          appointmentData = queueData['data'][0];
           presDetails = {
             "docId": queueData['data'][0]['Doctor_ID']['Doctor_ID'],
+            "patient_count": queueData['data'][0]['Doctor_ID']['Patient_Count'],
             "patientId": queueData['data'][0]['Patient_ID']['Patient_ID'],
             "appointmentId": queueData['data'][0]['Appointment_ID'],
           };
@@ -157,10 +166,34 @@ class _NextPatientState extends State<NextPatient> {
                       !isPatientCalled
                           ? Center(
                               child: ElevatedButton(
-                                onPressed: () {
-                                  setState(() {
-                                    isPatientCalled = true;
+                                onPressed: () async {
+                                  print({
+                                    "Patient_ID": appointmentData!['Patient_ID']
+                                        ['Patient_ID'],
+                                    "Date": DateTime.now().toString(),
+                                    "Note":
+                                        "Dr.${appointmentData!['Doctor_ID']['First_name']} ${appointmentData!['Doctor_ID']['Last_name']} is calling for appointment no : ${appointmentData!['Token_no']}"
                                   });
+                                  final response = await _notificationRepository
+                                      .createNotification(
+                                          notification: jsonEncode({
+                                    "Patient_ID": appointmentData!['Patient_ID']
+                                        ['Patient_ID'],
+                                    "Date": DateTime.now().toString(),
+                                    "Note":
+                                        "Dr.${appointmentData!['Doctor_ID']['First_name']} ${appointmentData!['Doctor_ID']['Last_name']} is calling for appointment no : ${appointmentData!['Token_no']}"
+                                  }));
+                                  if (response['status'] == "success") {
+                                    setState(() {
+                                      isPatientCalled = true;
+                                    });
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('Error Calling Patient')),
+                                    );
+                                  }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
@@ -180,16 +213,27 @@ class _NextPatientState extends State<NextPatient> {
                             )
                           : Center(
                               child: ElevatedButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   print(presDetails);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            PrescriptionsReportsScreen(
-                                              presDetails: presDetails!,
-                                            )),
-                                  );
+
+                                  final docResponse =
+                                      await _doctorRepository.updateDoctorRate(
+                                          doctor: jsonEncode({
+                                            "Patient_Count":
+                                                presDetails!['patient_count'] +
+                                                    1
+                                          }),
+                                          docId: presDetails!['docId']);
+                                  if (docResponse['status'] == "success") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              PrescriptionsReportsScreen(
+                                                presDetails: presDetails!,
+                                              )),
+                                    );
+                                  }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(

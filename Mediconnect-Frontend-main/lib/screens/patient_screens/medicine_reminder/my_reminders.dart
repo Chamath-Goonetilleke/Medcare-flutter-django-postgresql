@@ -39,8 +39,8 @@ class _MyRemindersScreenState extends State<MyRemindersScreen> {
   ];
 
   Future<void> _fetchReminders() async {
-    final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/reminders/daily/${widget.prescription['id']}'));
+    final response = await http.get(Uri.parse(
+        'http://10.0.2.2:8000/api/reminders/daily/${widget.prescription['id']}'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       setState(() {
@@ -55,60 +55,70 @@ class _MyRemindersScreenState extends State<MyRemindersScreen> {
     }
   }
 
-@override
-void initState() {
-  super.initState();
-  _fetchReminders();
-}
+  @override
+  void initState() {
+    super.initState();
+    _fetchReminders();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          isLoading ? const Center(child: CircularProgressIndicator(),): reminders.length > 0 ?   Expanded(
-            child: ListView.builder(
-              itemCount: reminders.length,
-              itemBuilder: (context, index) {
-                final reminder = reminders[index];
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    title:
-                        Text('${reminder['Medicine_ID']['Medicine']} - ${reminder['Medicine_ID']['Quantity']}'),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : reminders.length > 0
+                  ? Expanded(
+                      child: ListView.builder(
+                        itemCount: reminders.length,
+                        itemBuilder: (context, index) {
+                          final reminder = reminders[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            child: ListTile(
+                              title: Text(
+                                  '${reminder['Medicine_ID']['Medicine']} - ${reminder['Medicine_ID']['Quantity']}'),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(reminder['before_meal']
+                                      ? "Before Meal"
+                                      : reminder['after_meal']
+                                          ? "After Meal"
+                                          : ""),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.notifications, size: 18),
+                                      const SizedBox(width: 5),
+                                      Text(reminder['time']),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              trailing: Checkbox(
+                                value: reminder['is_active'],
+                                onChanged: (value) {
+                                  // Implement functionality if needed
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : const Column(
+                    
                       children: [
-                        Text(reminder['before_meal'] ? "Before Meal": reminder['after_meal'] ? "After Meal":""),
-                        Row(
-                          children: [
-                            const Icon(Icons.notifications, size: 18),
-                            const SizedBox(width: 5),
-                            Text(reminder['time']),
-                          ],
+                        SizedBox(height: 60),
+                        Center(
+                          child: Text("No Reminders Set"),
                         ),
                       ],
-                    ),
-                    trailing: Checkbox(
-                      value: reminder['is_active'],
-                      onChanged: (value) {
-                        // Implement functionality if needed
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
-          ): Column(
-            children: [
-                            const SizedBox(height: 60),
-
-              const Center(child: Text("No Reminders Set"),),
-            ],
-          )
-      
-        
+                    )
         ],
       ),
     );

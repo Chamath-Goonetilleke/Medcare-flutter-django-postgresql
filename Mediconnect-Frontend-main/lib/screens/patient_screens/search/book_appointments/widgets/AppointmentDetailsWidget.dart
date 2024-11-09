@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:mediconnect/repository/appointment_queue_repository.dart';
 import 'package:mediconnect/repository/appointment_repository.dart';
+import 'package:mediconnect/repository/notification_repository.dart';
 import 'package:mediconnect/screens/patient_screens/home/home_page/HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,6 +41,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
   final AppointmentRepository appointmentRepository = AppointmentRepository();
   final AppointmentQueueRepository queueRepository =
       AppointmentQueueRepository();
+  final NotificationRepository _notificationRepository = NotificationRepository();
   int token_no = 1;
   bool isLoading = true;
 
@@ -323,15 +325,26 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
                               "Queue_ID": res['data']['Queue_ID'],
                             }));
                             if (response['status'] == "success") {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Appointment Placed successfully')),
-                              );
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HomePage()));
+                              final notiResponse = await _notificationRepository
+                                  .createNotification(
+                                      notification: jsonEncode({
+                                "Doctor_ID": widget.searchData['DoctorId'],
+                                "Date": DateTime.now().toString(),
+                                "Note":
+                                    "You  have an appointment on ${formatDate(widget.searchData['Date'].toString())} at ${widget.hospital}"
+                              }));
+                              if(notiResponse['status'] == "success"){
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Appointment Placed successfully')),
+                                );
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => HomePage()));
+                              }
+                              
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(

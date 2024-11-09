@@ -1,8 +1,73 @@
-import 'package:flutter/material.dart';
-import '../../create_account & login/login/LoginScreen.dart'; // Import RegisterScreen
+import 'dart:math';
 
-class ForegroundContent extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:mediconnect/screens/doctor_screens/doctormain.dart';
+import 'package:mediconnect/screens/patient_screens/home/home_page/HomePage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../create_account & login/login/LoginScreen.dart'; // Import RegisterScreen
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class ForegroundContent extends StatefulWidget {
   const ForegroundContent({super.key});
+
+  @override
+  State<ForegroundContent> createState() => _ForegroundContentState();
+}
+
+class _ForegroundContentState extends State<ForegroundContent> {
+  String? _deviceId;
+
+  Future getDeviceId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? deviceId = prefs.getString('device_id');
+
+    if (deviceId == null) {
+      // Generate a random unique ID (you can use any approach here)
+      deviceId = _generateRandomId();
+      await prefs.setString('device_id', deviceId);
+    }
+
+    final response = await http
+        .get(Uri.parse('http://10.0.2.2:8000/api/users/device/$deviceId/'));
+    final data = jsonDecode(response.body);
+    if (data['status'] == "success") {
+      setUserID(data['data']['User_ID'].toString());
+      if (data['data']['Role'] == "Patient") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else if (data['data']['Role'] == "Doctor") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const DoctorHomeScreen()),
+        );
+      }
+      
+    }
+
+
+    setState(() {
+      _deviceId = deviceId;
+    });
+  }
+
+  Future setUserID(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_id', id);
+  }
+
+  String _generateRandomId() {
+    var random = Random();
+    return List.generate(16, (index) => random.nextInt(9).toString()).join();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getDeviceId();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +81,8 @@ class ForegroundContent extends StatelessWidget {
               elevation: 0, // Remove shadow
               title: const Text(
                 'Welcome',
-                style: TextStyle(color: Colors.white), // White text for contrast
+                style:
+                    TextStyle(color: Colors.white), // White text for contrast
               ),
             ),
             Expanded(
@@ -41,13 +107,14 @@ class ForegroundContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 30),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: ()  {
                         // Navigate to RegisterScreen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const LoginScreen()),
                         );
+                        
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,

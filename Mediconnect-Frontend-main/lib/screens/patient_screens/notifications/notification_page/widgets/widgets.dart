@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 // Notification widget for the Notifications Page
 class NotificationCard extends StatelessWidget {
   final String title;
@@ -24,9 +25,41 @@ class NotificationCard extends StatelessWidget {
 }
 
 // View for Notifications
-class NotificationsView extends StatelessWidget {
+class NotificationsView extends StatefulWidget {
   const NotificationsView({Key? key}) : super(key: key);
 
+  @override
+  State<NotificationsView> createState() => _NotificationsViewState();
+}
+
+class _NotificationsViewState extends State<NotificationsView> {
+  bool isLoading = true;
+  List<dynamic> notifications = [];
+
+  Future<void> fetchData() async {
+    final response =
+        await http.get(Uri.parse('http://10.0.2.2:8000/api/appointments/'));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      setState(() {
+        isLoading = false;
+      });
+      final data = jsonDecode(response.body);
+      notifications = data['data'] as List;
+      print("${notifications[0]['Disease']}");
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      throw Exception('Failed to load doctors');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
   @override
   Widget build(BuildContext context) {
     return ListView(

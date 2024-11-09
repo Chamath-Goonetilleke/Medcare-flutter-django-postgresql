@@ -1,88 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class Notifications extends StatelessWidget {
+import 'package:shared_preferences/shared_preferences.dart';
+
+class Notifications extends StatefulWidget {
   const Notifications({super.key});
+
+  @override
+  State<Notifications> createState() => _NotificationsState();
+}
+
+class _NotificationsState extends State<Notifications> {
+  bool isLoading = true;
+  List<dynamic> notifications = [];
+
+  Future<void> getDoctorDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_id');
+
+    final uri =
+        Uri.parse("http://10.0.2.2:8000/api/doctors/getByUserId/$userId");
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+    final data = jsonDecode(response.body);
+    if (data['status'] == "success") {
+      final notifiResponse = await http.get(Uri.parse(
+          'http://10.0.2.2:8000/api/notes/doctor/${data['data']['Doctor_ID']}'));
+      if (notifiResponse.statusCode == 200) {
+        final notifiData = jsonDecode(notifiResponse.body);
+        print(notifiData);
+        setState(() {
+          notifications = notifiData['data'];
+
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        throw Exception('Failed to load doctors');
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getDoctorDetails();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Notifications"),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20.0),
-        children: const [
-          // Notification 1
-          Card(
-            elevation: 3,
-            child: ListTile(
-              leading: Icon(Icons.notification_important, color: Colors.blue),
-              title: Text("Appointment Reminder"),
-              subtitle: Text(
-                  "Your appointment with Dr. Smith is scheduled for tomorrow at 10:00 AM."),
-            ),
-          ),
-          SizedBox(height: 10),
-
-          // Notification 2
-          Card(
-            elevation: 3,
-            child: ListTile(
-              leading: Icon(Icons.notification_important, color: Colors.blue),
-              title: Text("New Message from Dr. Johnson"),
-              subtitle:
-                  Text("You have a new message regarding your test results."),
-            ),
-          ),
-          SizedBox(height: 10),
-
-          // Notification 3
-          Card(
-            elevation: 3,
-            child: ListTile(
-              leading: Icon(Icons.notification_important, color: Colors.blue),
-              title: Text("Prescription Update"),
-              subtitle: Text("Your prescription has been updated by Dr. Lee."),
-            ),
-          ),
-
-          SizedBox(height: 10),
-
-          // Notification 4
-          Card(
-            elevation: 4,
-            child: ListTile(
-              leading: Icon(Icons.notification_important, color: Colors.blue),
-              subtitle: Text("Don't forget to update your medicine intake."),
-            ),
-          ),
-
-          SizedBox(height: 10),
-
-          // Notification 5
-          Card(
-            elevation: 5,
-            child: ListTile(
-              leading: Icon(Icons.notification_important, color: Colors.blue),
-              subtitle: Text(
-                  "Your medicines are ready. You can buy them at Medicare Pharmacy."),
-            ),
-          ),
-
-          SizedBox(height: 10),
-
-          // Notification 5
-          Card(
-            elevation: 5,
-            child: ListTile(
-              leading: Icon(Icons.notification_important, color: Colors.blue),
-              title: Text("Appointment Reminder"),
-              subtitle: Text(
-                  "Dr. John Doe will come to Suwa Piyasa at 10.40am . Your appoinmeny details have updated"),
-            ),
-          ),
-        ],
-      ),
-    );
+        appBar: AppBar(
+          title: const Text('Notifications'),
+          automaticallyImplyLeading: false,
+        ),
+        body: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : notifications.isNotEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Expanded(
+                      child: ListView.builder(
+                        itemCount: notifications.length,
+                        itemBuilder: (context, index) {
+                          final notification = notifications[index];
+                          return Card(
+                            elevation: 3,
+                            child: ListTile(
+                              leading: const Icon(Icons.notification_important,
+                                  color: Colors.blue),
+                              subtitle: Text(notification['Note']),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                : const Center(
+                    child: Column(
+                    children: [
+                      const SizedBox(
+                        height: 60,
+                      ),
+                      const Text("No notifications")
+                    ],
+                  )));
   }
 }

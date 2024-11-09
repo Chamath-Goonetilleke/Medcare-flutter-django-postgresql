@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:mediconnect/repository/appointment_repository.dart';
+import 'package:mediconnect/repository/doctor_repository.dart';
+import 'package:mediconnect/screens/patient_screens/home/home_page/HomePage.dart';
 
 class RateScreen extends StatefulWidget {
   final String doctorName;
+  final Map<String, dynamic> appointment;
 
-  RateScreen({required this.doctorName});
+  RateScreen({required this.doctorName, required this.appointment});
 
   @override
   _RateScreenState createState() => _RateScreenState();
@@ -12,6 +18,9 @@ class RateScreen extends StatefulWidget {
 class _RateScreenState extends State<RateScreen> {
   int _doctorRating = 0; // Stores the selected rating for the doctor
   int _centerRating = 0; // Stores the selected rating for the medical center
+
+  final AppointmentRepository _appointmentRepository = AppointmentRepository();
+  final DoctorRepository _doctorRepository = DoctorRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +59,7 @@ class _RateScreenState extends State<RateScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.0),
                         image: DecorationImage(
-                          image: AssetImage('assets/Images/Doctor.png'),
+                          image: AssetImage('assets/images/Doctor.png'),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -61,14 +70,15 @@ class _RateScreenState extends State<RateScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.doctorName,
+                            "Dr. ${widget.appointment['Doctor_ID']['First_name']} ${widget.appointment['Doctor_ID']['Last_name']}",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text('Cardiologist, heart health'),
+                          Text(
+                              "${widget.appointment['Doctor_ID']['Specialization']}"),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -79,7 +89,6 @@ class _RateScreenState extends State<RateScreen> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Text('295 appointments'),
                             ],
                           ),
                         ],
@@ -135,7 +144,7 @@ class _RateScreenState extends State<RateScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.0),
                         image: DecorationImage(
-                          image: AssetImage('assets/Images/MedicalCenter.png'),
+                          image: AssetImage('assets/images/MedicalCenter.png'),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -146,14 +155,15 @@ class _RateScreenState extends State<RateScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Suwa Piyasa',
+                            "${widget.appointment['Hospital_ID']['Name']}",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text('Negombo Road, Kurunegala'),
+                          Text(
+                              "${widget.appointment['Hospital_ID']['Location']}"),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -164,7 +174,6 @@ class _RateScreenState extends State<RateScreen> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Text('340 reviews'),
                             ],
                           ),
                         ],
@@ -209,10 +218,55 @@ class _RateScreenState extends State<RateScreen> {
             // Submit Button
             Center(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  double rate =
+                      widget.appointment['Doctor_ID']['Rating'] + _doctorRating;
+                  int rateCount =
+                      widget.appointment['Doctor_ID']['Rating_Count'] + 1;
+
+                  final docResponse = await _doctorRepository.updateDoctorRate(
+                      doctor: jsonEncode({
+                        "Rating": rate / rateCount,
+                        "Rating_Count": rateCount
+                      }),
+                      docId: widget.appointment['Doctor_ID']['Doctor_ID']);
+
+                  if (docResponse['status'] == "success") {
+                    final apResponse =
+                        await _appointmentRepository.updateAppointment(
+                            appointment: jsonEncode({"Is_Rate": true}),
+                            apId: widget.appointment['Appointment_ID']);
+
+                    if (apResponse['status'] == "success") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Rating Submitted Success'),
+                        ),
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Error Submitting Rating'),
+                        ),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Error Submitting Rating'),
+                      ),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 163, vertical: 16),
+                      const EdgeInsets.symmetric(horizontal: 163, vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                     side: BorderSide(

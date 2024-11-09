@@ -10,7 +10,6 @@ from patient.models import Patient
 class Appointment(models.Model):
     Appointment_ID = models.BigAutoField(primary_key=True)
     Patient_ID = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    #Session_ID = models.ForeignKey(Session, on_delete=models.CASCADE)
     Token_no = models.BigIntegerField()
     Doctor_ID = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     Start_time = models.CharField()
@@ -20,4 +19,5 @@ class Appointment(models.Model):
     Approx_Time = models.CharField()
     Disease = models.CharField(max_length=255)
     Hospital_ID = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    Is_Rate = models.BooleanField(default=False)
     Queue_ID = models.ForeignKey(AppointmentQueue, on_delete=models.CASCADE)
