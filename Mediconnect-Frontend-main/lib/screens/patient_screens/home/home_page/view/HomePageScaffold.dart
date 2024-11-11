@@ -24,9 +24,9 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
 
   
 
-  Future<void> fetchData() async {
+  Future<void> fetchData(String pid) async {
     final response =
-        await http.get(Uri.parse('http://10.0.2.2:8000/api/appointments/'));
+        await http.get(Uri.parse('http://10.0.2.2:8000/api/appointments/getByPatient/$pid'));
     print(response.statusCode);
     if (response.statusCode == 200) {
       setState(() {
@@ -58,7 +58,7 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
       setState(() {
         _patientId = data['data']['Patient_ID'].toString();
       });
-    fetchData();
+    fetchData(data['data']['Patient_ID'].toString());
       print(" pid: ${data['data']['Patient_ID'].toString()}");
     }
   }

@@ -55,48 +55,48 @@ class _NotificationsPageScaffoldState extends State<NotificationsPageScaffold> {
     getDoctorDetails();
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2, // Number of tabs
       child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Notifications'),
-          ),
-          body: isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : notifications.isNotEmpty
-                  ? Padding(
+        appBar: AppBar(
+          title: const Text('Notifications'),
+        ),
+        body: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : notifications.isNotEmpty
+                ? Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Expanded(
-                        child: ListView.builder(
-                          itemCount: notifications.length,
-                          itemBuilder: (context, index) {
-                            final notification = notifications[index];
-                            return Card(
-                              elevation: 3,
-                              child: ListTile(
-                                leading: const Icon(Icons.notification_important,
-                                    color: Colors.blue),
-                                subtitle: Text(notification['Note']),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                    child: ListView.builder(
+                      itemCount: notifications.length,
+                      itemBuilder: (context, index) {
+                        final notification = notifications[index];
+                        return Card(
+                          elevation: 3,
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.notification_important,
+                              color: Colors.blue,
+                            ),
+                            subtitle: Text(notification['Note']),
+                          ),
+                        );
+                      },
+                    ),
                   )
-                  : const Center(
-                      child: Column(
+                : const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(
-                          height: 60,
-                        ),
-                        const Text("No notifications")
+                        Text("No notifications"),
                       ],
-                    ))),
-    
+                    ),
+                  ),
+      ),
     );
   }
+
 }

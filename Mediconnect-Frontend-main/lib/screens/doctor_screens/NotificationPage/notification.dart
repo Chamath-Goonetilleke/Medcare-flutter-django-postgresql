@@ -52,12 +52,13 @@ class _NotificationsState extends State<Notifications> {
     getDoctorDetails();
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return DefaultTabController(
+      length: 2, // Number of tabs
+      child: Scaffold(
         appBar: AppBar(
           title: const Text('Notifications'),
-          automaticallyImplyLeading: false,
         ),
         body: isLoading
             ? const Center(
@@ -66,31 +67,33 @@ class _NotificationsState extends State<Notifications> {
             : notifications.isNotEmpty
                 ? Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Expanded(
-                      child: ListView.builder(
-                        itemCount: notifications.length,
-                        itemBuilder: (context, index) {
-                          final notification = notifications[index];
-                          return Card(
-                            elevation: 3,
-                            child: ListTile(
-                              leading: const Icon(Icons.notification_important,
-                                  color: Colors.blue),
-                              subtitle: Text(notification['Note']),
+                    child: ListView.builder(
+                      itemCount: notifications.length,
+                      itemBuilder: (context, index) {
+                        final notification = notifications[index];
+                        return Card(
+                          elevation: 3,
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.notification_important,
+                              color: Colors.blue,
                             ),
-                          );
-                        },
-                      ),
+                            subtitle: Text(notification['Note']),
+                          ),
+                        );
+                      },
                     ),
                   )
                 : const Center(
                     child: Column(
-                    children: [
-                      const SizedBox(
-                        height: 60,
-                      ),
-                      const Text("No notifications")
-                    ],
-                  )));
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("No notifications"),
+                      ],
+                    ),
+                  ),
+      ),
+    );
   }
+
 }

@@ -17,6 +17,7 @@ class ForegroundContent extends StatefulWidget {
 
 class _ForegroundContentState extends State<ForegroundContent> {
   String? _deviceId;
+  bool isLoggedIn = true;
 
   Future getDeviceId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -44,9 +45,11 @@ class _ForegroundContentState extends State<ForegroundContent> {
           MaterialPageRoute(builder: (context) => const DoctorHomeScreen()),
         );
       }
-      
+    }else{
+      setState(() {
+        isLoggedIn = false;
+      });
     }
-
 
     setState(() {
       _deviceId = deviceId;
@@ -106,26 +109,27 @@ class _ForegroundContentState extends State<ForegroundContent> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    ElevatedButton(
-                      onPressed: ()  {
-                        // Navigate to RegisterScreen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginScreen()),
-                        );
-                        
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 15),
-                      ),
-                      child: const Text(
-                        'Get Started',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                    ),
+                    isLoggedIn
+                        ? const SizedBox()
+                        : ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const LoginScreen()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 50, vertical: 15),
+                            ),
+                            child: const Text(
+                              'Get Started',
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.black),
+                            ),
+                          ),
                   ],
                 ),
               ),

@@ -57,11 +57,10 @@ class _SwitchUserDialogState extends State<SwitchUserDialog> {
       title: const Text('Switch Account'),
       content: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+          : users.isNotEmpty ? SingleChildScrollView(
               child: ListBody(
                 children: users.map((user) {
                   if (user['User_ID'].toString() != _userId) {
-                    print("user $_userId User_ID: " + user['User_ID'].toString());
                     return UserListTile(
                       name: user['Device_ID'],
                       email: user['Email'],
@@ -81,7 +80,7 @@ class _SwitchUserDialogState extends State<SwitchUserDialog> {
                   }
                 }).toList(),
               ),
-            ),
+            ): const Center(child: Text("No other accounts"),),
       actions: [
         TextButton(
           child: const Text('Cancel'),
