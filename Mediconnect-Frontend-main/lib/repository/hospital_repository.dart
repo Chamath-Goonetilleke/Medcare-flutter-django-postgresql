@@ -6,7 +6,7 @@ class HospitalRepository {
   Future<dynamic> createHospital({required String hospital}) async {
     try {
       var response = await http.post(
-          Uri.parse("http://10.0.2.2:8000/api/hospitals/create/"),
+          Uri.parse("http://13.60.21.117:8000/api/hospitals/create/"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },

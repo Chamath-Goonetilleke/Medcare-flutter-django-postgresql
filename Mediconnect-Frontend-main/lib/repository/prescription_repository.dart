@@ -6,7 +6,7 @@ class PrescriptionRepository {
   Future<dynamic> createPrescription({required String prescription}) async {
     try {
       var response = await http.post(
-        Uri.parse("http://10.0.2.2:8000/api/prescriptions/create/"),
+        Uri.parse("http://13.60.21.117:8000/api/prescriptions/create/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },
@@ -28,7 +28,7 @@ class PrescriptionRepository {
   Future<dynamic> createMedicine({required String medicine}) async {
     try {
       var response = await http.post(
-        Uri.parse("http://10.0.2.2:8000/api/medicines/create/"),
+        Uri.parse("http://13.60.21.117:8000/api/medicines/create/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },
@@ -50,7 +50,7 @@ class PrescriptionRepository {
   Future<dynamic> createKeywords({required String keyword}) async {
     try {
       var response = await http.post(
-        Uri.parse("http://10.0.2.2:8000/api/keywords/create/"),
+        Uri.parse("http://13.60.21.117:8000/api/keywords/create/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },

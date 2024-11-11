@@ -6,7 +6,7 @@ class NotificationRepository {
   Future<dynamic> createNotification({required String notification}) async {
     try {
       var response = await http.post(
-          Uri.parse("http://10.0.2.2:8000/api/notes/create/"),
+          Uri.parse("http://13.60.21.117:8000/api/notes/create/"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },

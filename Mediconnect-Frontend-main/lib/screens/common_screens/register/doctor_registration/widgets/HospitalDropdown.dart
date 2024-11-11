@@ -28,7 +28,7 @@ class HospitalDropdownState extends State<HospitalDropdown> {
 
   Future<List<Map<String, dynamic>>> fetchMedicalCenters() async {
     final response =
-        await http.get(Uri.parse('http://10.0.2.2:8000/api/hospitals/'));
+        await http.get(Uri.parse('http://13.60.21.117:8000/api/hospitals/'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['data'] as List).map((center) {

@@ -122,7 +122,7 @@ Widget build(BuildContext context) {
                                     if (response['data']['Role'] == "Patient") {
                                       final usRes = await http.put(
                                           Uri.parse(
-                                              'http://10.0.2.2:8000/api/users/currentUser/${response['data']['User_ID']}/'),
+                                              'http://13.60.21.117:8000/api/users/currentUser/${response['data']['User_ID']}/'),
                                           headers: <String, String>{
                                             'Content-Type':
                                                 'application/json; charset=UTF-8'
@@ -142,7 +142,7 @@ Widget build(BuildContext context) {
                                         "Doctor") {
                                       final usRes = await http.put(
                                           Uri.parse(
-                                              'http://10.0.2.2:8000/api/users/currentUser/${response['data']['User_ID']}/'),
+                                              'http://13.60.21.117:8000/api/users/currentUser/${response['data']['User_ID']}/'),
                                           headers: <String, String>{
                                             'Content-Type':
                                                 'application/json; charset=UTF-8'

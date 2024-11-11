@@ -22,7 +22,7 @@ class _NotificationsPageScaffoldState extends State<NotificationsPageScaffold> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://10.0.2.2:8000/api/patient/getByUserId/$userId");
+        Uri.parse("http://13.60.21.117:8000/api/patient/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -31,7 +31,7 @@ class _NotificationsPageScaffoldState extends State<NotificationsPageScaffold> {
     if (data['status'] == "success") {
       print(data);
       final notifiResponse = await http.get(Uri.parse(
-          'http://10.0.2.2:8000/api/notes/patient/${data['data']['Patient_ID']}'));
+          'http://13.60.21.117:8000/api/notes/patient/${data['data']['Patient_ID']}'));
       if (notifiResponse.statusCode == 200) {
         final notifiData = jsonDecode(notifiResponse.body);
         print(notifiData);

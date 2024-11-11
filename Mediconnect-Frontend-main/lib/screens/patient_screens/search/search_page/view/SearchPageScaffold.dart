@@ -41,7 +41,7 @@ class _SearchPageScaffoldState extends State<SearchPagescaffold> {
 
   Future<List<Map<String, dynamic>>> _fetchDoctors() async {
     final response =
-        await http.get(Uri.parse('http://10.0.2.2:8000/api/doctors'));
+        await http.get(Uri.parse('http://13.60.21.117:8000/api/doctors'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       doctorVisits = data['data'] as List;
@@ -59,7 +59,7 @@ class _SearchPageScaffoldState extends State<SearchPagescaffold> {
 
   Future<Map<String, dynamic>> fetchDoctorVisit() async {
     final uri = Uri.parse(
-        "http://10.0.2.2:8000/api/visit/${selectedDoctorId}/${selectedMedicalCenterId}");
+        "http://13.60.21.117:8000/api/visit/${selectedDoctorId}/${selectedMedicalCenterId}");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -77,7 +77,7 @@ class _SearchPageScaffoldState extends State<SearchPagescaffold> {
 
   Future<List<Map<String, dynamic>>> _fetchMedicalCenters() async {
     final response =
-        await http.get(Uri.parse('http://10.0.2.2:8000/api/hospitals/'));
+        await http.get(Uri.parse('http://13.60.21.117:8000/api/hospitals/'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       hospitals = data['data'];
@@ -94,7 +94,7 @@ class _SearchPageScaffoldState extends State<SearchPagescaffold> {
 
   Future<List<Map<String, dynamic>>> _fetchDoctorVisits() async {
     final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/visit/doctor/$selectedDoctorId/'));
+        Uri.parse('http://13.60.21.117:8000/api/visit/doctor/$selectedDoctorId/'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       hospitals = data['data'];

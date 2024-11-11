@@ -63,7 +63,7 @@ class _PrescriptionsReportsScreenState
       reports = [];
     });
     final res = await http.get(Uri.parse(
-        "http://10.0.2.2:8000/api/prescriptions/patient/${widget.presDetails['patientId']}"));
+        "http://13.60.21.117:8000/api/prescriptions/patient/${widget.presDetails['patientId']}"));
     final prescriptionData = jsonDecode(res.body);
 
     if (prescriptionData['status'] == "success") {
@@ -72,7 +72,7 @@ class _PrescriptionsReportsScreenState
       // Iterate through each prescription
       for (var prescription in presList) {
         final medicineResponse = await http.get(Uri.parse(
-            "http://10.0.2.2:8000/api/medicines/prescription/${prescription['Prescription_ID']}"));
+            "http://13.60.21.117:8000/api/medicines/prescription/${prescription['Prescription_ID']}"));
         final medicineData = jsonDecode(medicineResponse.body);
 
         if (medicineData['status'] == "success") {
@@ -86,7 +86,7 @@ class _PrescriptionsReportsScreenState
           }).toList();
 
           final keywordResponse = await http.get(Uri.parse(
-              "http://10.0.2.2:8000/api/keywords/prescription/${prescription['Prescription_ID']}"));
+              "http://13.60.21.117:8000/api/keywords/prescription/${prescription['Prescription_ID']}"));
           final keywordData = jsonDecode(keywordResponse.body);
 
           if (keywordData['status'] == "success") {

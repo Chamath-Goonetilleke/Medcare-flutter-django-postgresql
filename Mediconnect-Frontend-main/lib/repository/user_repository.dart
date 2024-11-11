@@ -7,7 +7,7 @@ class UserRepository {
   Future<dynamic> createUser({required String user}) async {
     try {
       var response = await http.post(
-          Uri.parse("http://10.0.2.2:8000/api/users/create/"),
+          Uri.parse("http://13.60.21.117:8000/api/users/create/"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },
@@ -26,7 +26,7 @@ class UserRepository {
   Future<dynamic> loginUser({required String user}) async {
     try {
       var response = await http.post(
-          Uri.parse("http://10.0.2.2:8000/api/users/login/"),
+          Uri.parse("http://13.60.21.117:8000/api/users/login/"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },
@@ -45,7 +45,7 @@ class UserRepository {
    Future<dynamic> changeRegStatus({required String id}) async {
     try {
       var response = await http.put(
-          Uri.parse('http://10.0.2.2:8000/api/users/$id/update-registration/'),
+          Uri.parse('http://13.60.21.117:8000/api/users/$id/update-registration/'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },
@@ -64,7 +64,7 @@ class UserRepository {
 Future<dynamic> changeRole({required String id, required String role}) async {
     try {
       var response = await http.put(
-          Uri.parse('http://10.0.2.2:8000/api/users/$id/update-role/'),
+          Uri.parse('http://13.60.21.117:8000/api/users/$id/update-role/'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },

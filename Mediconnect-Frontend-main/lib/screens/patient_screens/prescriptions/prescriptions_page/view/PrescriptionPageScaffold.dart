@@ -19,7 +19,7 @@ class _PrescriptionsScaffoldState extends State<PrescriptionsScaffold> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://10.0.2.2:8000/api/patient/getByUserId/$userId");
+        Uri.parse("http://13.60.21.117:8000/api/patient/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -33,7 +33,7 @@ class _PrescriptionsScaffoldState extends State<PrescriptionsScaffold> {
         myPrescriptions = [];
       });
       final res = await http.get(Uri.parse(
-          "http://10.0.2.2:8000/api/prescriptions/patient/${data['data']['Patient_ID'].toString()}"));
+          "http://13.60.21.117:8000/api/prescriptions/patient/${data['data']['Patient_ID'].toString()}"));
       final prescriptionData = jsonDecode(res.body);
 
       if (prescriptionData['status'] == "success") {
@@ -42,7 +42,7 @@ class _PrescriptionsScaffoldState extends State<PrescriptionsScaffold> {
         // Iterate through each prescription
         for (var prescription in presList) {
           final medicineResponse = await http.get(Uri.parse(
-              "http://10.0.2.2:8000/api/medicines/prescription/${prescription['Prescription_ID']}"));
+              "http://13.60.21.117:8000/api/medicines/prescription/${prescription['Prescription_ID']}"));
           final medicineData = jsonDecode(medicineResponse.body);
 
           if (medicineData['status'] == "success") {
@@ -60,7 +60,7 @@ class _PrescriptionsScaffoldState extends State<PrescriptionsScaffold> {
 
 
             final keywordResponse = await http.get(Uri.parse(
-                "http://10.0.2.2:8000/api/keywords/prescription/${prescription['Prescription_ID']}"));
+                "http://13.60.21.117:8000/api/keywords/prescription/${prescription['Prescription_ID']}"));
             final keywordData = jsonDecode(keywordResponse.body);
 
             if (keywordData['status'] == "success") {

@@ -21,7 +21,7 @@ class _ProfileState extends State<Profile> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://10.0.2.2:8000/api/doctors/getByUserId/$userId");
+        Uri.parse("http://13.60.21.117:8000/api/doctors/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},

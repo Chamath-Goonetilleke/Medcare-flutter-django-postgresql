@@ -51,7 +51,7 @@ class _NextPatientState extends State<NextPatient> {
 
   Future<void> getQueue() async {
     final res = await http.get(Uri.parse(
-        "http://10.0.2.2:8000/api/appointments/getFilteredQueue/${widget.queueId}"));
+        "http://13.60.21.117:8000/api/appointments/getFilteredQueue/${widget.queueId}"));
     final queueData = jsonDecode(res.body);
 
     if (queueData['status'] == "success") {

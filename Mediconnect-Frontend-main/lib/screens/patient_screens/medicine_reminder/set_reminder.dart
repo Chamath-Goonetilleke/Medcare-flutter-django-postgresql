@@ -26,7 +26,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
         print(widget.prescription);
     List<Future<void>> requests =
         widget.prescription['medications'].map<Future<void>>((med) async {
-      final uri = Uri.parse("http://10.0.2.2:8000/api/pharmacy/${med['id']}");
+      final uri = Uri.parse("http://13.60.21.117:8000/api/pharmacy/${med['id']}");
       final response = await http.get(
         uri,
         headers: {'Content-Type': 'application/json'},

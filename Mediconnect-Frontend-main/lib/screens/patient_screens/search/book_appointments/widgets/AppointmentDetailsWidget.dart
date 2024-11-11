@@ -61,7 +61,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://10.0.2.2:8000/api/patient/getByUserId/$userId");
+        Uri.parse("http://13.60.21.117:8000/api/patient/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -78,7 +78,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
   void fetchDoctorVisit() async {
     print("${widget.searchData['DoctorId']}");
     final uri = Uri.parse(
-        "http://10.0.2.2:8000/api/visit/${widget.searchData['DoctorId']}/${widget.searchData['HospitalId']}");
+        "http://13.60.21.117:8000/api/visit/${widget.searchData['DoctorId']}/${widget.searchData['HospitalId']}");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -97,7 +97,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
 
   void getQueue(int patientCount, String startTime, String endTime) async {
     final uri = Uri.parse(
-        "http://10.0.2.2:8000/api/appointment-queues/getUniqueQueue/");
+        "http://13.60.21.117:8000/api/appointment-queues/getUniqueQueue/");
     final response = await http.post(uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -114,7 +114,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
       });
 
       final res = await http.get(Uri.parse(
-          "http://10.0.2.2:8000/api/appointments/getByQueue/${data['data']['Queue_ID']}"));
+          "http://13.60.21.117:8000/api/appointments/getByQueue/${data['data']['Queue_ID']}"));
       final queueData = jsonDecode(res.body);
 
       if (queueData['status'] == "success") {

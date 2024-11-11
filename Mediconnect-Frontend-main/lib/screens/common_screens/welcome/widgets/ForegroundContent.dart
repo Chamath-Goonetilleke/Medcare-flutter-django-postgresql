@@ -30,7 +30,7 @@ class _ForegroundContentState extends State<ForegroundContent> {
     }
 
     final response = await http
-        .get(Uri.parse('http://10.0.2.2:8000/api/users/device/$deviceId/'));
+        .get(Uri.parse('http://13.60.21.117:8000/api/users/device/$deviceId/'));
     final data = jsonDecode(response.body);
     if (data['status'] == "success") {
       setUserID(data['data']['User_ID'].toString());

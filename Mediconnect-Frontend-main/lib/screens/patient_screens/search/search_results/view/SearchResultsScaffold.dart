@@ -22,7 +22,7 @@ class SearchResultsScaffold extends StatelessWidget {
 
   Future<Map<String, dynamic>> fetchSearchResults() async {
     print(doctorName);
-    final uri = Uri.parse('http://10.0.2.2:8000/api/doctors/$doctorName/get-all-data');
+    final uri = Uri.parse('http://13.60.21.117:8000/api/doctors/$doctorName/get-all-data');
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},

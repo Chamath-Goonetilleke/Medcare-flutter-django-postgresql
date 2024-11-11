@@ -7,7 +7,7 @@ class PharmacyRepository {
       {required String pharmacy, required int pharmacyId}) async {
     try {
       var response = await http.put(
-        Uri.parse("http://10.0.2.2:8000/api/pharmacy/update/$pharmacyId/"),
+        Uri.parse("http://13.60.21.117:8000/api/pharmacy/update/$pharmacyId/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },

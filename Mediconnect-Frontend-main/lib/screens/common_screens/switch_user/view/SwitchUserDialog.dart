@@ -29,7 +29,7 @@ class _SwitchUserDialogState extends State<SwitchUserDialog> {
     String? userId = prefs.getString('user_id');
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2:8000/api/users/all-device-users/$deviceId/')); // Update with your actual API endpoint
+          'http://13.60.21.117:8000/api/users/all-device-users/$deviceId/')); // Update with your actual API endpoint
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

@@ -36,7 +36,7 @@ class _CalendarViewState extends State<TaskPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('user_id');
     final uri =
-        Uri.parse("http://10.0.2.2:8000/api/doctors/getByUserId/$userId");
+        Uri.parse("http://13.60.21.117:8000/api/doctors/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -47,7 +47,7 @@ class _CalendarViewState extends State<TaskPage> {
         docId = data['data']['Doctor_ID'];
       });
       final response =
-          await http.get(Uri.parse('http://10.0.2.2:8000/api/tasks/getByDoc/${data['data']['Doctor_ID']}'));
+          await http.get(Uri.parse('http://13.60.21.117:8000/api/tasks/getByDoc/${data['data']['Doctor_ID']}'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -88,7 +88,7 @@ class _CalendarViewState extends State<TaskPage> {
   // Update task on the backend
   Future<void> _updateTask(Task task) async {
     final response = await http.put(
-      Uri.parse('http://10.0.2.2:8000/api/tasks/${task.id}/update/'),
+      Uri.parse('http://13.60.21.117:8000/api/tasks/${task.id}/update/'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -551,7 +551,7 @@ class _CalendarViewState extends State<TaskPage> {
                     endTime != null &&
                     !_isTimeOverlap(startTime!, endTime!)) {
                   final response = await http.post(
-                    Uri.parse('http://10.0.2.2:8000/api/tasks/create/'),
+                    Uri.parse('http://13.60.21.117:8000/api/tasks/create/'),
                     headers: <String, String>{
                       'Content-Type': 'application/json',
                     },

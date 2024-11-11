@@ -40,7 +40,7 @@ class _MyRemindersScreenState extends State<MyRemindersScreen> {
 
   Future<void> _fetchReminders() async {
     final response = await http.get(Uri.parse(
-        'http://10.0.2.2:8000/api/reminders/daily/${widget.prescription['id']}'));
+        'http://13.60.21.117:8000/api/reminders/daily/${widget.prescription['id']}'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       setState(() {

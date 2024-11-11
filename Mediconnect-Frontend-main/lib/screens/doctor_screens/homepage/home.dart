@@ -157,7 +157,7 @@ class _HomeState extends State<Home> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://10.0.2.2:8000/api/doctors/getByUserId/$userId");
+        Uri.parse("http://13.60.21.117:8000/api/doctors/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -179,7 +179,7 @@ class _HomeState extends State<Home> {
     // Fetch hospitals only once
     if (!isHospitalsFetched && doctor != null) {
       final res = await http.get(Uri.parse(
-          'http://10.0.2.2:8000/api/visit/doctor/${doctor!['Doctor_ID']}/'));
+          'http://13.60.21.117:8000/api/visit/doctor/${doctor!['Doctor_ID']}/'));
       if (res.statusCode == 200) {
         final hosData = jsonDecode(res.body);
         hospitals = hosData['data'];
@@ -198,7 +198,7 @@ class _HomeState extends State<Home> {
 
   Future<void> getQueue() async {
     final uri = Uri.parse(
-        "http://10.0.2.2:8000/api/appointment-queues/getUniqueQueue/");
+        "http://13.60.21.117:8000/api/appointment-queues/getUniqueQueue/");
     final response = await http.post(uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -215,7 +215,7 @@ class _HomeState extends State<Home> {
         queueId = data['data']['Queue_ID'];
       });
       final res = await http.get(Uri.parse(
-          "http://10.0.2.2:8000/api/appointments/getFilteredQueue/${data['data']['Queue_ID']}"));
+          "http://13.60.21.117:8000/api/appointments/getFilteredQueue/${data['data']['Queue_ID']}"));
       final queueData = jsonDecode(res.body);
 
       if (queueData['status'] == "success") {

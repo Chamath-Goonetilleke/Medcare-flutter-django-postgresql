@@ -38,7 +38,7 @@ class _NotificationsViewState extends State<NotificationsView> {
 
   Future<void> fetchData() async {
     final response =
-        await http.get(Uri.parse('http://10.0.2.2:8000/api/appointments/'));
+        await http.get(Uri.parse('http://13.60.21.117:8000/api/appointments/'));
     print(response.statusCode);
     if (response.statusCode == 200) {
       setState(() {

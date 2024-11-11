@@ -20,7 +20,7 @@ class _NotificationsState extends State<Notifications> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://10.0.2.2:8000/api/doctors/getByUserId/$userId");
+        Uri.parse("http://13.60.21.117:8000/api/doctors/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -28,7 +28,7 @@ class _NotificationsState extends State<Notifications> {
     final data = jsonDecode(response.body);
     if (data['status'] == "success") {
       final notifiResponse = await http.get(Uri.parse(
-          'http://10.0.2.2:8000/api/notes/doctor/${data['data']['Doctor_ID']}'));
+          'http://13.60.21.117:8000/api/notes/doctor/${data['data']['Doctor_ID']}'));
       if (notifiResponse.statusCode == 200) {
         final notifiData = jsonDecode(notifiResponse.body);
         print(notifiData);
