@@ -28,7 +28,7 @@ class HospitalDropdownState extends State<HospitalDropdown> {
 
   Future<List<Map<String, dynamic>>> fetchMedicalCenters() async {
     final response =
-        await http.get(Uri.parse('http://13.60.21.117:8000/api/hospitals/'));
+        await http.get(Uri.parse('http://13.49.21.193:8000/api/hospitals/'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['data'] as List).map((center) {
@@ -53,27 +53,23 @@ class HospitalDropdownState extends State<HospitalDropdown> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Text('No medical centers available');
           } else {
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: 'Hospital',
-                  ),
-                  items: snapshot.data!.map((center) {
-                    return DropdownMenuItem<String>(
-                      value: center['Hospital_ID'],
-                      child: Flexible(
-                        child: Text(
-                          center['Hospital_Name']!,
-                          overflow: TextOverflow.ellipsis, // Prevent overflow
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: widget.onHospitalChanged,
-                  value: widget.selectedHospital,
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Hospital',
                 ),
+                items: snapshot.data!.map((center) {
+                  return DropdownMenuItem<String>(
+                    value: center['Hospital_ID'],
+                    child: Text(
+                      center['Hospital_Name']!,
+                      overflow: TextOverflow.ellipsis, // Prevent overflow
+                    ),
+                  );
+                }).toList(),
+                onChanged: widget.onHospitalChanged,
+                value: widget.selectedHospital,
               ),
             );
           }

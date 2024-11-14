@@ -6,7 +6,7 @@ class DoctorRepository {
   Future<dynamic> createDoctor({required String doctor}) async {
     try {
       var response = await http.post(
-          Uri.parse("http://13.60.21.117:8000/api/doctors/create/"),
+          Uri.parse("http://13.49.21.193:8000/api/doctors/create/"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },
@@ -22,10 +22,12 @@ class DoctorRepository {
     }
   }
 
-    Future<dynamic> updateDoctor({required int currentHos, required int docId}) async {
+  Future<dynamic> updateDoctor(
+      {required int currentHos, required int docId}) async {
     try {
       var response = await http.patch(
-          Uri.parse("http://13.60.21.117:8000/api/doctors/update_current_hospital/$docId/"),
+          Uri.parse(
+              "http://13.49.21.193:8000/api/doctors/update_current_hospital/$docId/"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },
@@ -42,11 +44,11 @@ class DoctorRepository {
   }
 
   Future<dynamic> updateDoctorRate(
-      {required String doctor , required int docId}) async {
+      {required String doctor, required int docId}) async {
     try {
       var response = await http.patch(
           Uri.parse(
-              "http://13.60.21.117:8000/api/doctors/update_current_hospital/$docId/"),
+              "http://13.49.21.193:8000/api/doctors/update_current_hospital/$docId/"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8'
           },

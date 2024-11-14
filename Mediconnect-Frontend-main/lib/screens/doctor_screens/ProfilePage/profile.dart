@@ -21,7 +21,7 @@ class _ProfileState extends State<Profile> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://13.60.21.117:8000/api/doctors/getByUserId/$userId");
+        Uri.parse("http://13.49.21.193:8000/api/doctors/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -56,7 +56,11 @@ class _ProfileState extends State<Profile> {
           ),
         ],
       ),
-      body: isLoading ? const Center(child: CircularProgressIndicator(),): Padding(
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Padding(
               padding: const EdgeInsets.all(16.0),
               child: SingleChildScrollView(
                 child: Column(
@@ -108,7 +112,6 @@ class _ProfileState extends State<Profile> {
                       initialValue: "${doctor!['Birthday']}",
                     ),
                     const SizedBox(height: 20),
-
                     ListTile(
                       leading: const Icon(Icons.location_on),
                       title: Text(
@@ -238,7 +241,6 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
             ),
-   
-   );
+    );
   }
 }

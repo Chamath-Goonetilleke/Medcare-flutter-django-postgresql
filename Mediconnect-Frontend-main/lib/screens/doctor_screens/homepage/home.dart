@@ -28,7 +28,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
-  String? qrData; 
+  String? qrData;
   bool isScanning = false;
   bool isLoading = true;
 
@@ -61,11 +61,13 @@ class _HomeState extends State<Home> {
       );
     });
   }
+
   @override
   void dispose() {
     controller?.dispose();
     super.dispose();
   }
+
   void _showQRScanner() {
     setState(() {
       isScanning = true;
@@ -150,14 +152,12 @@ class _HomeState extends State<Home> {
     getDoctorDetails();
   }
 
-
-
   Future<void> getDoctorDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://13.60.21.117:8000/api/doctors/getByUserId/$userId");
+        Uri.parse("http://13.49.21.193:8000/api/doctors/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -179,7 +179,7 @@ class _HomeState extends State<Home> {
     // Fetch hospitals only once
     if (!isHospitalsFetched && doctor != null) {
       final res = await http.get(Uri.parse(
-          'http://13.60.21.117:8000/api/visit/doctor/${doctor!['Doctor_ID']}/'));
+          'http://13.49.21.193:8000/api/visit/doctor/${doctor!['Doctor_ID']}/'));
       if (res.statusCode == 200) {
         final hosData = jsonDecode(res.body);
         hospitals = hosData['data'];
@@ -198,14 +198,14 @@ class _HomeState extends State<Home> {
 
   Future<void> getQueue() async {
     final uri = Uri.parse(
-        "http://13.60.21.117:8000/api/appointment-queues/getUniqueQueue/");
+        "http://13.49.21.193:8000/api/appointment-queues/getUniqueQueue/");
     final response = await http.post(uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           "Doctor_ID": doctor!['Doctor_ID'],
           "Hospital_ID": selectedMedicalCenterId,
           //"Date": '2024-11-05'
-          "Date":  DateFormat('yyyy-MM-dd').format(DateTime.now()).toString()
+          "Date": DateFormat('yyyy-MM-dd').format(DateTime.now()).toString()
         }));
     final data = jsonDecode(response.body);
 
@@ -215,7 +215,7 @@ class _HomeState extends State<Home> {
         queueId = data['data']['Queue_ID'];
       });
       final res = await http.get(Uri.parse(
-          "http://13.60.21.117:8000/api/appointments/getFilteredQueue/${data['data']['Queue_ID']}"));
+          "http://13.49.21.193:8000/api/appointments/getFilteredQueue/${data['data']['Queue_ID']}"));
       final queueData = jsonDecode(res.body);
 
       if (queueData['status'] == "success") {
@@ -223,7 +223,6 @@ class _HomeState extends State<Home> {
           queueLength = int.parse(queueData['queue_length'].toString());
           isLoading = false;
         });
-
       }
     } else {
       setState(() {
@@ -260,7 +259,11 @@ class _HomeState extends State<Home> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(top: 0, left: 16.0, right: 18.0),
-              child: isLoading ? const Center(child: CircularProgressIndicator(),): Column(
+              child: isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : Column(
                       children: [
                         Align(
                           alignment: Alignment.centerLeft,
@@ -435,7 +438,6 @@ class _HomeState extends State<Home> {
                         ),
                       ],
                     ),
-            
             ),
           ),
         ],

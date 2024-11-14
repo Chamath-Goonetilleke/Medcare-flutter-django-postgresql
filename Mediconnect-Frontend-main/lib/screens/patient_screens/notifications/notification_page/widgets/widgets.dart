@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 // Notification widget for the Notifications Page
 class NotificationCard extends StatelessWidget {
   final String title;
@@ -38,7 +39,7 @@ class _NotificationsViewState extends State<NotificationsView> {
 
   Future<void> fetchData() async {
     final response =
-        await http.get(Uri.parse('http://13.60.21.117:8000/api/appointments/'));
+        await http.get(Uri.parse('http://13.49.21.193:8000/api/appointments/'));
     print(response.statusCode);
     if (response.statusCode == 200) {
       setState(() {
@@ -60,6 +61,7 @@ class _NotificationsViewState extends State<NotificationsView> {
     super.initState();
     fetchData();
   }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -67,7 +69,8 @@ class _NotificationsViewState extends State<NotificationsView> {
       children: const [
         NotificationCard(
           title: 'Appointment Reminder',
-          subtitle: 'Your appointment with Dr. Smith is scheduled for tomorrow at 10:00 AM.',
+          subtitle:
+              'Your appointment with Dr. Smith is scheduled for tomorrow at 10:00 AM.',
         ),
         NotificationCard(
           title: 'New Message from Dr. Johnson',

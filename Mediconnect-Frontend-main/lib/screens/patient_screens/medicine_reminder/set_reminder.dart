@@ -23,10 +23,11 @@ class _ReminderScreenState extends State<ReminderScreen> {
   void getMedicineIds() async {
     List<MedicineReminder> results =
         []; // Step 1: Initialize an empty list to store results
-        print(widget.prescription);
+    print(widget.prescription);
     List<Future<void>> requests =
         widget.prescription['medications'].map<Future<void>>((med) async {
-      final uri = Uri.parse("http://13.60.21.117:8000/api/pharmacy/${med['id']}");
+      final uri =
+          Uri.parse("http://13.49.21.193:8000/api/pharmacy/${med['id']}");
       final response = await http.get(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -35,8 +36,6 @@ class _ReminderScreenState extends State<ReminderScreen> {
       final data = jsonDecode(response.body);
       if (data['status'] == "success" &&
           data['data']['IsReminderSet'] == false) {
-
-        
         results.add(MedicineReminder(
           medicineId: data['data']['Medicine_ID']['Medicine_ID'],
           medicine: data['data']['Medicine_ID']['Medicine'],
@@ -71,7 +70,11 @@ class _ReminderScreenState extends State<ReminderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: isLoading ? const Center(child: CircularProgressIndicator(),): FutureBuilder<List<MedicineReminder>>(
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : FutureBuilder<List<MedicineReminder>>(
               future: reminders,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -91,7 +94,6 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 );
               },
             ),
-    
     );
   }
 }
@@ -141,45 +143,48 @@ class _ReminderCardState extends State<ReminderCard> {
         widget.reminder.selectedTimes = selectedTimes;
       }
 
-      List<Map<String, dynamic>>  reminders=[];
-      if(widget.reminder.interval != null) { 
-       reminders.add({
-        "Medicine_ID":widget.reminder.medicineId,
-        "time":"${widget.reminder.startTime!.hour.toString().padLeft(2, '0')}.${widget.reminder.startTime!.minute.toString().padLeft(2, '0')}",
-        "quantity":widget.reminder.quantity,
-        "after_meal":widget.reminder.afterMeal,
-        "before_meal":widget.reminder.beforeMeal
-       });
-       reminders.add({
+      List<Map<String, dynamic>> reminders = [];
+      if (widget.reminder.interval != null) {
+        reminders.add({
           "Medicine_ID": widget.reminder.medicineId,
-          "time": "${widget.reminder.endTime!.hour.toString().padLeft(2, '0')}.${widget.reminder.endTime!.minute.toString().padLeft(2, '0')}",
+          "time":
+              "${widget.reminder.startTime!.hour.toString().padLeft(2, '0')}.${widget.reminder.startTime!.minute.toString().padLeft(2, '0')}",
+          "quantity": widget.reminder.quantity,
+          "after_meal": widget.reminder.afterMeal,
+          "before_meal": widget.reminder.beforeMeal
+        });
+        reminders.add({
+          "Medicine_ID": widget.reminder.medicineId,
+          "time":
+              "${widget.reminder.endTime!.hour.toString().padLeft(2, '0')}.${widget.reminder.endTime!.minute.toString().padLeft(2, '0')}",
           "quantity": widget.reminder.quantity,
           "after_meal": widget.reminder.afterMeal,
           "before_meal": widget.reminder.beforeMeal
         });
       }
-      if(widget.reminder.timesPerDay != null){
-        
+      if (widget.reminder.timesPerDay != null) {
         for (var selectedTime in selectedTimes) {
           reminders.add({
             "Medicine_ID": widget.reminder.medicineId,
-            "time": "${selectedTime!.hour.toString().padLeft(2, '0')}.${selectedTime.minute.toString().padLeft(2, '0')}",
+            "time":
+                "${selectedTime!.hour.toString().padLeft(2, '0')}.${selectedTime.minute.toString().padLeft(2, '0')}",
             "quantity": widget.reminder.quantity,
             "after_meal": widget.reminder.afterMeal,
             "before_meal": widget.reminder.beforeMeal
           });
         }
-
       }
       print(reminders);
-      final response = await _reminderRepository.createReminder(reminder: jsonEncode(reminders));
-      if(response['status'] =="success"){
-        final res = await _pharmacyRepository.updatePharmacy(pharmacy: jsonEncode({"IsReminderSet": true}), pharmacyId: widget.reminder.medicineId);
-        if(res['status'] =="success"){
+      final response = await _reminderRepository.createReminder(
+          reminder: jsonEncode(reminders));
+      if (response['status'] == "success") {
+        final res = await _pharmacyRepository.updatePharmacy(
+            pharmacy: jsonEncode({"IsReminderSet": true}),
+            pharmacyId: widget.reminder.medicineId);
+        if (res['status'] == "success") {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Reminder Saved Successfully')));
         }
-        
       }
     } catch (e) {
       ScaffoldMessenger.of(context)

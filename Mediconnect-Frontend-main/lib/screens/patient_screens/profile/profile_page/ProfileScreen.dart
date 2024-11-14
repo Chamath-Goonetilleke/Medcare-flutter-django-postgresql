@@ -35,7 +35,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Perform account removal
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
                   );
                 } else {
                   // Show error message or do nothing
@@ -54,6 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     );
   }
+
   Map<String, dynamic>? patient;
   bool isLoading = true;
   Future<void> getUserId() async {
@@ -61,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://13.60.21.117:8000/api/patient/getByUserId/$userId");
+        Uri.parse("http://13.49.21.193:8000/api/patient/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -72,8 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         patient = data['data'];
         isLoading = false;
       });
-      
-    }else{
+    } else {
       setState(() {
         isLoading = false;
       });
@@ -88,14 +89,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: isLoading ? const Center(child: CircularProgressIndicator(),): SingleChildScrollView(
+        child: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -239,8 +243,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: const Text('Log Out'),
                     ),
                     ElevatedButton(
-                      onPressed: () =>
-                          _showRemoveAccountDialog(context, "${patient!['First_name']} ${patient!['Last_name']}"),
+                      onPressed: () => _showRemoveAccountDialog(context,
+                          "${patient!['First_name']} ${patient!['Last_name']}"),
                       child: const Text('Remove Account'),
                       style:
                           ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -248,7 +252,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-     
       ),
     );
   }

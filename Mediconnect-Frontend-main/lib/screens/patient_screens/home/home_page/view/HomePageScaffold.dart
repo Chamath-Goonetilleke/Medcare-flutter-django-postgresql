@@ -22,11 +22,9 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
   bool isLoading = true;
   String? _patientId;
 
-  
-
   Future<void> fetchData(String pid) async {
-    final response =
-        await http.get(Uri.parse('http://13.60.21.117:8000/api/appointments/getByPatient/$pid'));
+    final response = await http.get(Uri.parse(
+        'http://13.49.21.193:8000/api/appointments/getByPatient/$pid'));
     print(response.statusCode);
     if (response.statusCode == 200) {
       setState(() {
@@ -48,7 +46,7 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://13.60.21.117:8000/api/patient/getByUserId/$userId");
+        Uri.parse("http://13.49.21.193:8000/api/patient/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -58,15 +56,17 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
       setState(() {
         _patientId = data['data']['Patient_ID'].toString();
       });
-    fetchData(data['data']['Patient_ID'].toString());
+      fetchData(data['data']['Patient_ID'].toString());
       print(" pid: ${data['data']['Patient_ID'].toString()}");
     }
   }
-@override
+
+  @override
   void initState() {
     super.initState();
     getUserId();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,49 +100,59 @@ class _HomePageScaffoldState extends State<HomePageScaffold> {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  appointments.length > 0?
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: appointments.length,
-                      itemBuilder: (context, index) {
-                        final appointment = appointments[index];
-                        return AppointmentButton(
-                          color: appointment['Status'] == "Queued"
-                              ? Colors.yellow
-                              :appointment['Status'] == "Completed"
-                              ? Colors.green: Colors.red,
-                          text:
-                              "${appointment['Disease']} - Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AppointmentDetailsScreen(
-                                  appointmentName:
-                                      "${appointment['Disease']}",
-                                  doctorName: "Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
-                                  specialty: appointment['Doctor_ID']
-                                      ['Specialization'],
-                                  appointmentTime: "${appointment['Start_time'] } - ${appointment['End_time']}",
-                                  appointmentDate: appointment['Date'],
-                                  location: appointment['Hospital_ID']['Name'],
-                                  appointmentNumber: appointment['Token_no'],
-                                  currentNumber: appointment['Queue_ID']['Current_Number'],
-                                  turnTime: appointment['Approx_Time'],
-                                  appointmentStatus: appointment['Status'],
-                                  appointment: appointment,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  )
-                : const Padding(
-                  padding: EdgeInsets.fromLTRB(8, 40, 8, 8),
-                  child: Center(child: Text("No Appointment Available"),),
-                )
+                  appointments.length > 0
+                      ? Expanded(
+                          child: ListView.builder(
+                            itemCount: appointments.length,
+                            itemBuilder: (context, index) {
+                              final appointment = appointments[index];
+                              return AppointmentButton(
+                                color: appointment['Status'] == "Queued"
+                                    ? Colors.yellow
+                                    : appointment['Status'] == "Completed"
+                                        ? Colors.green
+                                        : Colors.red,
+                                text:
+                                    "${appointment['Disease']} - Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AppointmentDetailsScreen(
+                                        appointmentName:
+                                            "${appointment['Disease']}",
+                                        doctorName:
+                                            "Dr.${appointment['Doctor_ID']['First_name']} ${appointment['Doctor_ID']['Last_name']}",
+                                        specialty: appointment['Doctor_ID']
+                                            ['Specialization'],
+                                        appointmentTime:
+                                            "${appointment['Start_time']} - ${appointment['End_time']}",
+                                        appointmentDate: appointment['Date'],
+                                        location: appointment['Hospital_ID']
+                                            ['Name'],
+                                        appointmentNumber:
+                                            appointment['Token_no'],
+                                        currentNumber: appointment['Queue_ID']
+                                            ['Current_Number'],
+                                        turnTime: appointment['Approx_Time'],
+                                        appointmentStatus:
+                                            appointment['Status'],
+                                        appointment: appointment,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        )
+                      : const Padding(
+                          padding: EdgeInsets.fromLTRB(8, 40, 8, 8),
+                          child: Center(
+                            child: Text("No Appointment Available"),
+                          ),
+                        )
                 ],
               ),
             ),

@@ -49,67 +49,69 @@ class _LoginScaffoldState extends State<LoginScaffold> {
     await prefs.setString('user_id', id);
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: Stack(
-      children: [
-        const BackgroundImage(), // Use the background image
-        Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: Column(
-            children: [
-              // Title at the top
-              const Padding(
-                padding: EdgeInsets.only(top: 50.0),
-                child: Text(
-                  'Login to Your Account',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          const BackgroundImage(), // Use the background image
+          Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: Column(
+              children: [
+                // Title at the top
+                const Padding(
+                  padding: EdgeInsets.only(top: 50.0),
+                  child: Text(
+                    'Login to Your Account',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Center(
-                  child: BlurredBox(
-                    child: Padding(
-                      padding: const EdgeInsets.all(30.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              labelStyle: TextStyle(color: Colors.white),
-                              filled: true,
-                              fillColor: Colors.white24,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                Expanded(
+                  child: Center(
+                    child: BlurredBox(
+                      child: Padding(
+                        padding: const EdgeInsets.all(30.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                labelText: 'Email',
+                                labelStyle: TextStyle(color: Colors.white),
+                                filled: true,
+                                fillColor: Colors.white24,
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(12)),
+                                ),
                               ),
+                              controller: _emailController,
                             ),
-                            controller: _emailController,
-                          ),
-                          const SizedBox(height: 20),
-                          TextField(
-                            obscureText: true,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
-                              labelStyle: TextStyle(color: Colors.white),
-                              filled: true,
-                              fillColor: Colors.white24,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                            const SizedBox(height: 20),
+                            TextField(
+                              obscureText: true,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                labelText: 'Password',
+                                labelStyle: TextStyle(color: Colors.white),
+                                filled: true,
+                                fillColor: Colors.white24,
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(12)),
+                                ),
                               ),
+                              controller: _passwordController,
                             ),
-                            controller: _passwordController,
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: () async {
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: () async {
                                 var response = await userRepository.loginUser(
                                     user: jsonEncode(<String, String>{
                                   "Email": _emailController.text,
@@ -122,7 +124,7 @@ Widget build(BuildContext context) {
                                     if (response['data']['Role'] == "Patient") {
                                       final usRes = await http.put(
                                           Uri.parse(
-                                              'http://13.60.21.117:8000/api/users/currentUser/${response['data']['User_ID']}/'),
+                                              'http://13.49.21.193:8000/api/users/currentUser/${response['data']['User_ID']}/'),
                                           headers: <String, String>{
                                             'Content-Type':
                                                 'application/json; charset=UTF-8'
@@ -142,7 +144,7 @@ Widget build(BuildContext context) {
                                         "Doctor") {
                                       final usRes = await http.put(
                                           Uri.parse(
-                                              'http://13.60.21.117:8000/api/users/currentUser/${response['data']['User_ID']}/'),
+                                              'http://13.49.21.193:8000/api/users/currentUser/${response['data']['User_ID']}/'),
                                           headers: <String, String>{
                                             'Content-Type':
                                                 'application/json; charset=UTF-8'
@@ -177,35 +179,34 @@ Widget build(BuildContext context) {
                                       context, response['message']);
                                 }
                               },
-    
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blueAccent,
+                              ),
+                              child: const Text('Login'),
                             ),
-                            child: const Text('Login'),
-                          ),
-                          const SizedBox(height: 20),
-                          const Text('Or', style: TextStyle(color: Colors.black)),
-                          const SizedBox(height: 10),
-                          GoogleSignInButton(),
-                          const SizedBox(height: 10),
-                          FacebookSignInButton(),
-                          const SizedBox(height: 20),
-                          const Text('Do not have an account?', style: TextStyle(color: Colors.black)),
-                          const CreateAnAccount(),
-                          const SizedBox(height: 20),
-                        ],
+                            const SizedBox(height: 20),
+                            const Text('Or',
+                                style: TextStyle(color: Colors.black)),
+                            const SizedBox(height: 10),
+                            GoogleSignInButton(),
+                            const SizedBox(height: 10),
+                            FacebookSignInButton(),
+                            const SizedBox(height: 20),
+                            const Text('Do not have an account?',
+                                style: TextStyle(color: Colors.black)),
+                            const CreateAnAccount(),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
-
-}
-                          

@@ -128,7 +128,7 @@ class _SetInstructionsScaffoldState extends State<SetInstructionsScaffold> {
 
   Future<void> _initializeFields() async {
     final uri = Uri.parse(
-        "http://13.60.21.117:8000/api/pharmacy/${widget.medication['id']}");
+        "http://13.49.21.193:8000/api/pharmacy/${widget.medication['id']}");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -179,7 +179,7 @@ class _SetInstructionsScaffoldState extends State<SetInstructionsScaffold> {
   }
 
   Future<void> saveInstructions() async {
-    final url = Uri.parse('http://13.60.21.117:8000/api/pharmacy/');
+    final url = Uri.parse('http://13.49.21.193:8000/api/pharmacy/');
     final requestData = {
       "Medicine_ID": widget.medication['id'],
       "Interval": intervalEnabled ? '$intervalHours hours' : null,
@@ -465,7 +465,7 @@ class _SetInstructionsScaffoldState extends State<SetInstructionsScaffold> {
       {required bool enabled,
       required ValueChanged<bool> onChanged,
       Widget? child}) {
-    return  Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SwitchListTile(

@@ -29,7 +29,7 @@ class _SwitchUserDialogState extends State<SwitchUserDialog> {
     String? userId = prefs.getString('user_id');
     try {
       final response = await http.get(Uri.parse(
-          'http://13.60.21.117:8000/api/users/all-device-users/$deviceId/')); // Update with your actual API endpoint
+          'http://13.49.21.193:8000/api/users/all-device-users/$deviceId/')); // Update with your actual API endpoint
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -57,30 +57,33 @@ class _SwitchUserDialogState extends State<SwitchUserDialog> {
       title: const Text('Switch Account'),
       content: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : users.isNotEmpty ? SingleChildScrollView(
-              child: ListBody(
-                children: users.map((user) {
-                  if (user['User_ID'].toString() != _userId) {
-                    return UserListTile(
-                      name: user['Device_ID'],
-                      email: user['Email'],
-                      role: user['Role'],
-                      onTap: () {
-                        // Handle switching to this account
-                               Navigator.push(
+          : users.isNotEmpty
+              ? SingleChildScrollView(
+                  child: ListBody(
+                    children: users.map((user) {
+                      if (user['User_ID'].toString() != _userId) {
+                        return UserListTile(
+                          name: user['Device_ID'],
+                          email: user['Email'],
+                          role: user['Role'],
+                          onTap: () {
+                            // Handle switching to this account
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      const LoginScreen()),
+                                  builder: (context) => const LoginScreen()),
                             );
-                      },
-                    );
-                  } else {
-                    return const SizedBox();
-                  }
-                }).toList(),
-              ),
-            ): const Center(child: Text("No other accounts"),),
+                          },
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
+                    }).toList(),
+                  ),
+                )
+              : const Center(
+                  child: Text("No other accounts"),
+                ),
       actions: [
         TextButton(
           child: const Text('Cancel'),

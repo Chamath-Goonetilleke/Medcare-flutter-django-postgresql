@@ -17,12 +17,12 @@ class _NotificationsPageScaffoldState extends State<NotificationsPageScaffold> {
   bool isLoading = true;
   List<dynamic> notifications = [];
 
-    Future<void> getDoctorDetails() async {
+  Future<void> getDoctorDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://13.60.21.117:8000/api/patient/getByUserId/$userId");
+        Uri.parse("http://13.49.21.193:8000/api/patient/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -31,7 +31,7 @@ class _NotificationsPageScaffoldState extends State<NotificationsPageScaffold> {
     if (data['status'] == "success") {
       print(data);
       final notifiResponse = await http.get(Uri.parse(
-          'http://13.60.21.117:8000/api/notes/patient/${data['data']['Patient_ID']}'));
+          'http://13.49.21.193:8000/api/notes/patient/${data['data']['Patient_ID']}'));
       if (notifiResponse.statusCode == 200) {
         final notifiData = jsonDecode(notifiResponse.body);
         print(notifiData);
@@ -55,7 +55,7 @@ class _NotificationsPageScaffoldState extends State<NotificationsPageScaffold> {
     getDoctorDetails();
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2, // Number of tabs
@@ -98,5 +98,4 @@ class _NotificationsPageScaffoldState extends State<NotificationsPageScaffold> {
       ),
     );
   }
-
 }

@@ -6,7 +6,7 @@ class AppointmentRepository {
   Future<dynamic> createAppointment({required String appointment}) async {
     try {
       var response = await http.post(
-        Uri.parse("http://13.60.21.117:8000/api/appointments/create/"),
+        Uri.parse("http://13.49.21.193:8000/api/appointments/create/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },
@@ -25,17 +25,18 @@ class AppointmentRepository {
     }
   }
 
-  Future<dynamic> updateAppointment({required String appointment, required int apId}) async {
+  Future<dynamic> updateAppointment(
+      {required String appointment, required int apId}) async {
     try {
       var response = await http.put(
-        Uri.parse("http://13.60.21.117:8000/api/appointments/$apId/update/"),
+        Uri.parse("http://13.49.21.193:8000/api/appointments/$apId/update/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },
         body: appointment,
       );
 
-      print(response.body); 
+      print(response.body);
       if (response.statusCode == 201 || response.statusCode == 200) {
         return jsonDecode(response.body); // Successful response
       } else {
@@ -47,11 +48,10 @@ class AppointmentRepository {
     }
   }
 
-   Future<dynamic> deleteAppointment(
-      { required int apId}) async {
+  Future<dynamic> deleteAppointment({required int apId}) async {
     try {
       var response = await http.delete(
-        Uri.parse("http://13.60.21.117:8000/api/appointments/$apId/delete/"),
+        Uri.parse("http://13.49.21.193:8000/api/appointments/$apId/delete/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },
@@ -61,7 +61,6 @@ class AppointmentRepository {
       print(response.body);
       if (response.statusCode == 201 || response.statusCode == 200) {
         return jsonDecode(response.body);
-        
       } else {
         return {"status": "error", "message": jsonDecode(response.body)};
       }
@@ -70,5 +69,4 @@ class AppointmentRepository {
       return {"status": "error", "message": error.toString()};
     }
   }
-
 }

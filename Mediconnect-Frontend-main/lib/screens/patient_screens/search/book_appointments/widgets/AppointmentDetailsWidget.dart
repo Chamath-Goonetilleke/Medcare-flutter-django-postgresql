@@ -41,7 +41,8 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
   final AppointmentRepository appointmentRepository = AppointmentRepository();
   final AppointmentQueueRepository queueRepository =
       AppointmentQueueRepository();
-  final NotificationRepository _notificationRepository = NotificationRepository();
+  final NotificationRepository _notificationRepository =
+      NotificationRepository();
   int token_no = 1;
   bool isLoading = true;
 
@@ -61,7 +62,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
     String? userId = prefs.getString('user_id');
 
     final uri =
-        Uri.parse("http://13.60.21.117:8000/api/patient/getByUserId/$userId");
+        Uri.parse("http://13.49.21.193:8000/api/patient/getByUserId/$userId");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -78,7 +79,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
   void fetchDoctorVisit() async {
     print("${widget.searchData['DoctorId']}");
     final uri = Uri.parse(
-        "http://13.60.21.117:8000/api/visit/${widget.searchData['DoctorId']}/${widget.searchData['HospitalId']}");
+        "http://13.49.21.193:8000/api/visit/${widget.searchData['DoctorId']}/${widget.searchData['HospitalId']}");
     final response = await http.get(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -97,7 +98,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
 
   void getQueue(int patientCount, String startTime, String endTime) async {
     final uri = Uri.parse(
-        "http://13.60.21.117:8000/api/appointment-queues/getUniqueQueue/");
+        "http://13.49.21.193:8000/api/appointment-queues/getUniqueQueue/");
     final response = await http.post(uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -114,7 +115,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
       });
 
       final res = await http.get(Uri.parse(
-          "http://13.60.21.117:8000/api/appointments/getByQueue/${data['data']['Queue_ID']}"));
+          "http://13.49.21.193:8000/api/appointments/getByQueue/${data['data']['Queue_ID']}"));
       final queueData = jsonDecode(res.body);
 
       if (queueData['status'] == "success") {
@@ -148,7 +149,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
         });
       }
     } else {
-     setState(() {
+      setState(() {
         appTime = startTime;
         isLoading = false;
       });
@@ -333,7 +334,7 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
                                 "Note":
                                     "You  have an appointment on ${formatDate(widget.searchData['Date'].toString())} at ${widget.hospital}"
                               }));
-                              if(notiResponse['status'] == "success"){
+                              if (notiResponse['status'] == "success") {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text(
@@ -344,7 +345,6 @@ class _AppointmentDetailsWidgetState extends State<AppointmentDetailsWidget> {
                                     MaterialPageRoute(
                                         builder: (context) => HomePage()));
                               }
-                              
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(

@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AppointmentQueueRepository {
-  Future<dynamic> createAppointmentQueue({required String appointmentQueue}) async {
+  Future<dynamic> createAppointmentQueue(
+      {required String appointmentQueue}) async {
     try {
       var response = await http.post(
-        Uri.parse("http://13.60.21.117:8000/api/appointment-queues/create/"),
+        Uri.parse("http://13.49.21.193:8000/api/appointment-queues/create/"),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },
